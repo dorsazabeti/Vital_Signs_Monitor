@@ -1,0 +1,19 @@
+# ninja log v7
+3	27	1787080940849173451	CMakeFiles/board_bringup.dir/Src/startup_stm32f746xx.S.obj	27c292a76d6ef06b
+2	57	1787080940848999737	CMakeFiles/board_bringup.dir/Src/sysmem.c.obj	cf6deacf523d3dad
+2	90	1787080940848763689	CMakeFiles/board_bringup.dir/Src/syscall.c.obj	19fc674f84620044
+1	168	1787080940847218976	CMakeFiles/board_bringup.dir/Src/stm32f7xx_hal_msp.c.obj	863a7c94037055b5
+1	182	1787080940847439732	CMakeFiles/board_bringup.dir/Src/system_stm32f7xx.c.obj	d2f8b6f1b3d41902
+1	187	1787080940847330354	CMakeFiles/board_bringup.dir/Src/stm32f7xx_it.c.obj	a1d0e8db8554d60c
+3	199	1787080940849570005	CMakeFiles/board_bringup.dir/Users/arad/Documents/Uni/Tasks/Az_iot/STM32CubeF7/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_cortex.c.obj	5ffc20c7b7f4f807
+3	200	1787080940849303163	CMakeFiles/board_bringup.dir/Users/arad/Documents/Uni/Tasks/Az_iot/STM32CubeF7/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal.c.obj	d96b2d07d026a8aa
+4	203	1787080940851101717	CMakeFiles/board_bringup.dir/Users/arad/Documents/Uni/Tasks/Az_iot/STM32CubeF7/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_rcc_ex.c.obj	f31cd600d4291232
+4	203	1787080940850950004	CMakeFiles/board_bringup.dir/Users/arad/Documents/Uni/Tasks/Az_iot/STM32CubeF7/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_rcc.c.obj	80eff4755b17985a
+6	210	1787080940852521885	CMakeFiles/board_bringup.dir/Users/arad/Documents/Uni/Tasks/Az_iot/STM32CubeF7/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pwr_ex.c.obj	c92f4eb2e40eee62
+57	212	1787080940903585250	CMakeFiles/board_bringup.dir/Users/arad/Documents/Uni/Tasks/Az_iot/STM32CubeF7/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_flash.c.obj	c3d83f3acfcaffc0
+3	213	1787080940849755760	CMakeFiles/board_bringup.dir/Users/arad/Documents/Uni/Tasks/Az_iot/STM32CubeF7/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_gpio.c.obj	63e739533fac0779
+5	213	1787080940851328724	CMakeFiles/board_bringup.dir/Users/arad/Documents/Uni/Tasks/Az_iot/STM32CubeF7/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pwr.c.obj	dae4881a38b2ac0
+28	215	1787080940874232828	CMakeFiles/board_bringup.dir/Users/arad/Documents/Uni/Tasks/Az_iot/STM32CubeF7/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_ltdc.c.obj	bafb853a2dc2cf50
+93	245	1787080940939180526	CMakeFiles/board_bringup.dir/Users/arad/Documents/Uni/Tasks/Az_iot/STM32CubeF7/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_flash_ex.c.obj	a0f23ca9b4fd1e68
+0	376	1787080940847027970	CMakeFiles/board_bringup.dir/Src/main.c.obj	b9a7eedeafce8960
+376	416	1787080941222231642	board_bringup.elf	86a536c0a1fdb68b

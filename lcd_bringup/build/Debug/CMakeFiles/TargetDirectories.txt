@@ -1,0 +1,3 @@
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/lcd_bringup/build/Debug/CMakeFiles/board_bringup.dir
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/lcd_bringup/build/Debug/CMakeFiles/edit_cache.dir
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/lcd_bringup/build/Debug/CMakeFiles/rebuild_cache.dir
