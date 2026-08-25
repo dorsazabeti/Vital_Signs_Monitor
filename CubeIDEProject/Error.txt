@@ -1,0 +1,391 @@
+❯ mkdir build
+cd build
+
+cmake ..
+make -j4
+-- The C compiler identification is AppleClang 21.0.0.21000101
+-- The ASM compiler identification is AppleClang
+-- Found assembler: /usr/bin/cc
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Configuring done (0.6s)
+-- Generating done (0.1s)
+-- Build files have been written to: /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/build
+[  0%] Building C object CMakeFiles/VitalSignsMonitor.elf.dir/Core/Src/dcmi.c.o
+[  0%] Building C object CMakeFiles/VitalSignsMonitor.elf.dir/Core/Src/adc.c.o
+[  0%] Building C object CMakeFiles/VitalSignsMonitor.elf.dir/Core/Src/crc.c.o
+[  0%] Building C object CMakeFiles/VitalSignsMonitor.elf.dir/Core/Src/dma2d.c.o
+In file included from In file included from In file included from In file included from /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Src/crc.c/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Src/dma2d.c/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Src/adc.c/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Src/dcmi.c:::2121:
+:
+In file included from In file included from :/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/dma2d.h/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/adc.h21:::
+2929In file included from :
+:
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/dcmi.h21In file included from :
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/main.hIn file included from :/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/crc.h30In file included from ::
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/main.h29In file included from ::
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h30In file included from ::
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/main.h29In file included from :::
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h30In file included from :29:
+29In file included from :
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/stm32f7xx_hal_conf.h/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/stm32f7xx_hal_conf.h::
+271In file included from :
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.hIn file included from :/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc.h29In file included from /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/main.h::27271:
+In file included from ::
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_def.h30:
+In file included from In file included from /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h:
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/stm32f7xx_hal_conf.h::29:
+29:
+In file included from In file included from /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc.h::27:
+271In file included from /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/stm32f7xx_hal_conf.h:
+:/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/CMSIS/Device/ST/STM32F7xx/Include/stm32f7xx.h:In file included from 145/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc.h271:::
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_def.h27In file included from 3/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc.h:: 27:
+In file included from /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_def.h:::
+29error: 29In file included from /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_def.h:29:
+:
+:
+
+      "Please/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/CMSIS/Device/ST/STM32F7xx/Include/stm32f7xx.h :select145 first/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/CMSIS/Device/ST/STM32F7xx/Include/stm32f7xx.h :/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/CMSIS/Device/ST/STM32F7xx/Include/stm32f7xx.h3:::145:3: the error:  target STM32F7xxerror:  device145 used:3: 
+error:  
+      "Pleasein       your
+"Please        "Please selectselectselect  first applicationthe target STM32F7xx device used  in first  your firstapplication  (in stm32f7xx.h file)"the 
+ target STM32F7xx (in stm32f7xx.h file)"
+the target STM32F7xxdevice device  usedused  inin  youryour  applicationapplication  (in stm32f7xx.h file)"(in stm32f7xx.h file)"
+
+        145145 |  | 145 |   ##eerro145r  |  # #err"Prleerorrro ro"Plaea rse sse "lee"Plce Palse sets eellaseecfi rsstele cfitr stetct  ffiirrhset t tasrge tt STM3t2hteh et atrFa7x x dtevrgiehtec  etgaergte  useSd tiST STTMM3322FF77xxxx  ddenM e3vicvyouer2F 7uxsx e dda evpiiplicaticoen  (iin sn yocuuetsme32f7 xxd.r  applhi file)uicna tyiooun"r
+       applicas | (ti  ^e
+d in yoon (iin stm32f7xnu rsx tamp.p32hf7xx.hl fication (in  sfiltei)l"m3
+e)      "| 2f  ^7
+
+      | xx  ^.
+h file)"
+      |   ^
+In file included from In file included from /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Src/adc.cIn file included from :/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Src/crc.c:21:
+In file included from In file included from /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/crc.h/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Src/dma2d.c::2121/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Src/dcmi.c:
+:
+In file included from /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/adc.h:29:
+In file included from :/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/main.h21:
+:In file included from 3029/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/dcmi.h:
+:
+:In file included from In file included from /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/main.hIn file included from :/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/dma2d.h29:
+29In file included from :
+:/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/main.hIn file included from 29:/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/stm32f7xx_hal_conf.h30::
+::
+In file included from 30:
+In file included from /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h:In file included from 29/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h:
+:In file included from 29/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/stm32f7xx_hal_conf.h:
+271In file included from :
+In file included from /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc.h:31::
+271/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/main.h/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h::3047::
+3::
+ In file included from /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h:error: 29:
+In file included from /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/stm32f7xx_hal_conf.h/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc.h:
+      271unknown:
+ In file included from type/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc.h :31name In file included from 'uint32_t':/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Core/Inc/stm32f7xx_hal_conf.h31:
+::
+271:
+
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h   47In file included from 47:3:  | : 47:/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc.h3error:  :31
+:
+      u:/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.hi n:tunknown type473 2name_ t'uint32_t' error: 
+
+      unknown type name    47'uint32_t' |  
+ uint32P_   47L | L S t:uatt iPnLtL3S2t_att e3P;:L  L S t/*error: !< 
+T      hunknowne e;  n e w /s*t!< aThtypeea tte noefw   teh;e s   name/ 'uint32_t'tPaLLte
+*. 
+o      f|       ^47! | t< h  euin
+Tt32h_ teP L PnLew sLtSaL.ta
+      t| t  ^
+e; e of   the PLL./
+*      !| <   ^T
+he new state of the PLL.
+      |   ^
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:50:3: error: 
+      unknown type name 'uint32_t'
+   50 |   uint32_t PLLSource;  /*!< RCC_PLLSo/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.hu:r50c:e3::  PLLerror:  en
+t      runknowny  typec lnameo 'uint32_t'
+ck    s50o | u r cuei.nt3/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h2_
+t       |   ^/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h
+:50::50:3: error: 3:
+P      unknown LtypeLS onameu 'uint32_t'
+rce;   /*   !50 |   uierror: <
+       unknownRnC typet 3name2 _'uint32_t't 
+PLC_   P50LLLSourcSeo: | urc eP;  LuLi   e/nn*t!< rRty3 2c_lto cPCkC so_uPrcLe.LSouLrLcSeo;u 
+       r| ce  ^:
+ /P*L!L<  eRnC/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.htC:r_PL53L:S3o: error: y uclroce: PLL entr
+yc      kunknown  stypeo u rname 'uint32_t'cl
+occk   e. s
+      53|  |   ^ 
+ uoiunrtc3e2._t
+       P| LL  ^M
+;       /*!< PLLM: Division factor for PLL VCO input clock.
+      |   ^
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:53:3: error: 
+      unknown type name 'uint32_t'
+   53 |   uint32_t PLLM;       /*!< PLLM: Division factor for PLL VCO input clock.
+      |   ^
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:53:3: error: 
+      unknown type name 'uint32_t'
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:53   :533 | :   uierror: nt3
+2      _unknownt  typeP LnameL M'uint32_t';
+          /53*/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h | ! :< 56 u:3P:L LMinerror: : 
+t3D2i_vtis      iunknown  type/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:56:3o:n  facerror: tor f
+o      runknown  PtypeL Lname  VC'uint32_t'O 
+input c name 'uint32_t'
+PlLoc   k56 |   Lu   56i | nt.M3 
+ ui;n t 32  _ t   PL/L*      |   ^2
+_!t<  PLLM: ND;i v i s P  L LN/;*!i<  oPnL L fNa :c tor  Multiplicati   /*!< PLLfor PLL VCon N: Of aicntpoMruu tf ltoir PLL VCO ocuploctkput .c
+      | ll/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.ho:c  ^k
+.56
+:i3c:       | atioerror: n   ^
+
+      unknownf typea cnamet o'uint32_t'r 
+for PL   L56  | V C Ou ionutt3p2u_tt  cPlLoLcNk;.  
+        |     ^ 
+/*!< PLLN: Multiplication factor for PLL VCO output clock.
+      |   ^
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:56:3: error: 
+      unknown type name 'uint32_t'
+   56 |   uint32_t PLLN;       /*!/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:59<: 3P:L LN:error:  Mu
+      unknown typel tiplnamei c'uint32_t'at
+ion fa/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.hc:t59or: 3f   o59r:  |    Perror: uinLtL32
+_t  V      PCLLP;O  o u   t  unknown//Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h type name: *59'uint32_t'!:3: error: p
+      unknown type name<u
+  tP'uint32_t' L
+   59 |   uint32_t clocPkLLP;.LP
+:       Divisi| on f a    59  |   ^c 
+ t u i n t3/2*_!t<or  PfLo Lr PmLaLPiPn:  sDy;isvtiesmi ocnl ock ( S      Y/*S!Cf<LaKc)t.o rP L
+f      or|  m  ^aLin P
+: Dsystem cloickv i(sSiYoSn facCtLoKr) .fo
+r       | ma  ^i
+n system cl/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.ho:c59k: 3(:S YSCerror: LK)
+.      unknown
+       type|  name  ^ 
+'uint32_t'
+   59 |   uint32_t PLLP;       /*!< PLLP: Division factor for main system clock (SYSCLK).
+      |   ^
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:62:3: error: 
+      unknown type name 'uint32_t'
+   62 |   uint32_t PLLQ;       /*!< PLLQ: Division factor for OTG FS, SDMMC and RNG /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:62clocks.
+      | :3  ^:
+ error: 
+      unknown type name 'uint32_t'
+   62 |   uint32_t PLLQ;       /*!< PLLQ: Division fact/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.ho:r62 :f3o:r  Oerror: T/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.hG:62: 3F: 
+      unknownerror:  type name 'uint32_t'
+      S
+, SDMMC   62 |   unknownu inat32_ ttype  PnnameLL Q'uint32_t';d   
+R/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.hN:G76  :     c623l |  ocks . : /u*
+!      i < PLerror: L|   ^
+nt32_t
+       PunknownL LtypeQ ;name   'uint32_t'  
+   /Q*: Division    !76 |  f auction<r  PfLLQ:t32o_rt OTG  FDS PiLvL, iSsDiMoMnC  fIa2nadc tRoNrG SclN;     for OTG FS, S/o*c!kD<M MC and RNG scl.ocks
+.      S| /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h  ^:
+76
+      | :3  ^p:
+ec iferror: 
+      unknown type iname es th'uint32_t'e m
+ultiplicati   o76n |   f aucitnotr3 2f_otr  PPLLLLII22SSN;     VC/O* !o<u tSppuecifies the mtu clock.ltiplication factor for 
+P      L| LI  ^2
+S VCO output clock.
+      |   ^
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:76:3: error: 
+      unknown type name 'uint32_t'
+   76 |   /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:76u:i3n:t 32_terror:  
+P      LLunknownI 2type/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h :80:3: SN;error:    
+       /*!name<  'uint32_t'Sunknownp
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h type: 80namee :'uint32_t'c3   :76  |  error: 
+
+i      unknownf itype     nameueinst 3th2e  m'uint32_t'ul
+tiplic_a   8080 |   tu |   uiiinont 3nft 2P_Ltactto r Lf32I_2SN; t   PLLI /*2!S<R ;S p e c iPfies the omul/t*iprl PLLI2S V!CLO< LSIp2eScR iou;t    fiies tchaeti o/pn fdaicvtiuostri  on cflaocckto.r 
+f      o| r *f!  ^<
+I2S  Scplocokr. P
+Le      L| I2c  ^S VCOi 
+outfputi ecsl the divisioock.
+      | n f  ^a
+ctor for I2S clock.
+      |   ^
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:80:3: error: 
+      unknown type name 'uint32_t'
+   80 |   ui/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.hn:t843:23_:t  PLerror: LI2
+S      Runknown;  type   name  'uint32_t'/*
+!< Specifies th   84/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h | : 80 :uin3t:3 2_t /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.hPLLI2eS:84 :d3i: viserror: iQoerror: ;n 
+         
+      /unknown  unknown typetype  fnamea *c!'uint32_t'
+tor for Iname2S     'uint32_t'80<c
+loc | k . 
+         | u  ^i
+84nt32_t PLLI2 SS | pR;     u eicnitf32_ite sP/ LLtIh2*!< Sep edcivisSiQo;ni  f  f iesa ctthoer f odr/i*v iSsAio!n<I 1  clfoackS.pe
+c      i| fcitores the divis  ^io
+ fn factor fo/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.hr: 84S:Ao3r:  Ierror: I1 cl
+o      cunknownk .2S
+       | cl  ^o
+ctype name 'uint32_t'
+k.
+      |   ^
+   84 |   uint32_t PLLI2SQ;    /*!< Specifies the division factor for SAI1 clock.
+      |   ^
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:101:3: error: 
+      unknown type name 'uint32_t'
+  101 |   uint32_t PLLSAIN;    /*!< Specifies the multiplication factor for PLLI2S VCO output clock.
+      |   ^
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:101:3: error: /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:84:3:
+      unknown type name  error: 'uint32_t'
+      
+unknown type name 'uint32_t'/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:
+  101 |      84u | i n 101uitn3t:233_t2 _:PLLtS APLLI2SQ;   I  N; / *  /error: *!<!
+<  Spe/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.hc:105:3i:f iSesperror:  t
+      unknowne chtype      ifiees  d tinameunknown htypee   'uint32_t'namem uv
+'uint32_t'il
+ti  ps105  101 |   uint3i2_otn fal | i cactitoon  Pr for SAI1 clo fLaLcSkA.IucNi;    t/*o!r<n  tfoSrp ec32
+PL_ti fies       | tLPI  ^Lh
+e 2muSLSAIQ;l t iVpCli c at iO/*!o<n  factoSrp efo ro uPcifiLes LtIh2eS t dipvuit scilVooncC kf.
+      O|    ^
+actor for ouSAI1t pculto cckl.oc
+k      .| 
+  ^      
+|   ^
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:101:3: error: 
+      unknown type name 'uint32_t'
+  101 |   uint32_t PLLSAIN;    /*!< Specifies the multiplication factor for PLLI2S VCO output clock.
+      |   ^
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:105:3: error: 
+      unknown type name 'uint32_t'/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:
+116:3: error: 
+      unknown type name 'uint32_t'
+  105 |   uint32_t P  L116L | S A IuQi;    /*!< Specifies the divisntion f3/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h2:_105t: PaL3c:tL oSr forA ISPA;I1   c l error: /oc
+k      .
+      *| !<unknown type  Sname  ^
+p/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.heci f'uint32_t'
+:105:i3e:s  therror: e  
+105       | unknown    dtypeui ivnamei s'uint32_t'
+nti3  o105n |   f auc2_t int32Pt_LotL SAIQ;  r   for 4P8LMLSA/I*QHz! <c lock;.S    
+/      *|   ^/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:116!p
+e<:c 3iS:fies  tpheecifies t error: di
+v      iunknowns itypeo nname  f'uint32_t'ac
+thor for SA  I1161 |   c loec udk.
+      |   ^
+int32_t PLiLSAIP;    /*!< Specifies thvei sion factor for S/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.hAI1 clod:126:3: error: 
+      unknown type name 'uint32_t'iviscion
+ factor for 48MHz c  l126o | c k .ui
+nt      3| 2_  ^t
+ PeriphClkoc.kS
+e      l| ec  ^t
+ion; /*!< The Extended Clock to be configured.
+      |   ^
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:116:3: error: 
+      unknown type name 'uint32_t'
+  116 |   uint32_t PLLSAIP;    /*!< Specifies the division factor for 48MHz clock.
+      |   ^
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:126:3:: 116:3: error: 
+error:       unknown 
+type       unknownname  type'uint32_t' 
+name /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h'uint32_t':135
+:  3126: |    uerror: in
+      tunknown3 2type_ t  name P e'uint32_t'riphC/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.hl:126o:c116k | S 
+ eul3ie:ntc  3t 2i135o |  _ uerror: i
+nt      unknown type PnLLtS3A;2I _P; /*t  name 'uint32_t'  
+ P/!L<L IT2h*e!<S   DivQ; S  p  e cifies tEhxet edn126d ied   Clo v | c i sion kf to be a uc tc/o*n!fi<g uSrpeedc.
+o      ri| i f  ^notr 
+32_t PerfiipehsCl4oc8kMS the HPeLlLzI 2S edcictlocvki.sii
+      o| n; o/n* !f<a cTthor ef oErx tSeAnId1  ^ ecdl oCclock to 
+bke .configured.
+      |   ^
+
+      |   ^
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:135:3: error: 
+      unknown type name 'uint32_t'
+  135 |   uint32_t PLLI2SDivQ;           /*!/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:135:3: < Serror: pec
+i      funknowni etypes  namet h'uint32_t'e 
+PL/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:126:3  :135 LIerror: 2 | S d i u
+i      nunknownvt 3type2 _tname P LL'uint32_t'I/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h
+2:iSsDiiovnQ ; 139 :3f:  a c t o r  f  o r   /*!<126 Sp | Se  uint3error: 
+      unknownA2cIi1  _cfti ePltypes thoece k.ri
+       name|  'uint32_t'ph
+CPLLI  ^2S 
+divl  iosionc factokSel139e | cr for SA Ition; /*!<  1T uhe cloExctkei.
+n      d|   ^
+nt32_t PLLSAIeDivQ;         d   C/l*o!ck to be<  cSopnefciigfuireesd .th
+e       | PL  ^L
+I2S division factor for SAI1 c/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.hl:o139c:k3.: 
+      | error:   ^
+
+      unknown type name 'uint32_t'
+  /Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h139: | 139 : 3u:i nt3error: 2_t
+       PunknownL LtypeS name 'uint32_t'
+AIDivQ;           /*  !139< |   u iSnpte3c2i_fti eP/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.hsL: tLhS135e APILDLi:Iv2S3 :d iviserror: ion
+       funknowna Qc;t otype r   name   'uint32_t'  
+   f/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:143:3:  or/ S  A135* |  error:  u!i<n Spetc
+3i2If_ti es t      hunknown1 type  cnamel 'uint32_t'e
+ PLLock.PIL  L143 | I  2uSDiv2Qi
+;n      S div t i3         /|   ^s
+*!< 2S_t PLpecifiesL tShAeI DPiLvLI2S division factor foRr ;S A I 1   c l o c k . 
+/      *| !<  ^ 
+Specifies the PLLSAI division fiacotnor for LTDC clock.
+      |  factor  ^
+ for SAI1 clock.
+      |   ^
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:143:3: error: 
+      unknown type name 'uint32_t'
+  143 |   uint32_t PLLSAIDivR;           /*!< Specifies the PLLSAI division factor for LTDC cl/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:146:3: error: 
+      unknown ock.
+type name 'uint32_t'
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:139:3: error:         146|  | 
+  ^ 
+ uin/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.ht3      2_t unknownR TtypeC Cnamel:o143c:k3S:e lecerror: tio
+n      ;unknown   type   name   'uint32_t'/
+*!< Specifi 'uint32_t'  
+143 |   uint32_t ePLLSAID  i139v | R ;  u i n t 3 2 _ t   P LL/S*A!I<D iSvpQecifi;e s   t h e    P L L SA/I* !d<i vSipseion factors for/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:146:3: error: 
+      unknown c Li TtypeD Cname  c'uint32_t'
+RTC lColcokc.k  146 |  
+ s       o| uuir  ^nc
+te3 2S_t RTeClCelcotcioknS.el
+e      c| ti  ^o
+n;f     ies the PLLI2S  division factor for SAI1 clock.
+      | /*  ^!
+< Specifies RTC Clock so/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.hu:r146c:e3 :S eleerror: cti
+o      nunknown. type
+      |   ^
+ name 'uint32_t'
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:149:3: error: 
+      unknown type name 'uint32_t'
+  149 |   uint32_t I  2146s | C l ouciknSte3l2e_ctt iRoTnC;C l     /*ockSelection;      /!< Spec*ifie!s/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h<:149:3: error: 
+ I2S       C Specifileosc kRunknownT Ctype  Cnamel o'uint32_t'
+ck source S souelecrticoen .Se
+l      e| ct  ^i
+on.
+      |   149 |   uint32  ^_t I2sCl
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.ho:143:c3k: error: Sel
+e      unknown typection;      /*!< Spe name 'uint32_t'
+cifies I2S Clock source Selection.
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h      |   ^
+:149:3: error: 
+      unknown type name 'uint32_t'
+    149 |   uint32_t I2sC143l | o c kuSienlte3ct2i_otn ;P L L S fatal error:  too many errors emitted, AI DivR/*!< ;   Specifies I2S C stopping  now [-ferror-limit=]      /l*!o<c kS pseocuir
+ce Selection.
+f      |   ^
+ies the PLLSAI division factor for LTDC clock.
+      |   ^
+fatal error: too many errors emitted, stopping now [-ferror-limit=]
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:146:3: error: 
+      unknown type name 'uint32_t'
+  146 |   uint32_t RTCClockSelection;      /*!< Specifies RTC Clock source Sfatal error: eltoo many errors emitted, stopping now [-ferror-limit=]
+ection.
+      |   ^
+/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc_ex.h:149:3: error: 
+      unknown type name 'uint32_t'
+  149 |   uint32_t I2sClockSelection;      /*!< Specifies I2S Clock source Selection.
+      |   ^
+fatal error: too many errors emitted, stopping now [-ferror-limit=]
+20 errors generated20.
+ errors generated.
+20 errors generated.
+20 errors generated.
+make[2]: *** [CMakeFiles/VitalSignsMonitor.elf.dir/Core/Src/crc.c.o] Error 1
+make[2]: *** Waiting for unfinished jobs....
+make[2]: *** [CMakeFiles/VitalSignsMonitor.elf.dir/Core/Src/dma2d.c.o] Error 1
+make[2]: *** [CMakeFiles/VitalSignsMonitor.elf.dir/Core/Src/adc.c.o] Error 1
+make[2]: *** [CMakeFiles/VitalSignsMonitor.elf.dir/Core/Src/dcmi.c.o] Error 1
+make[1]: *** [CMakeFiles/VitalSignsMonitor.elf.dir/all] Error 2
+make: *** [all] Error 2

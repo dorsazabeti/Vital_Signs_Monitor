@@ -1,0 +1,56 @@
+#include "lvgl.h"
+#include "lv_port_disp.h"
+
+#define LCD_WIDTH  480
+#define LCD_HEIGHT 272
+
+#define LCD_FB_ADDR 0xC0000000
+
+static uint16_t * framebuffer = (uint16_t *)LCD_FB_ADDR;
+
+static uint16_t buf1[LCD_WIDTH * 40];
+static uint16_t buf2[LCD_WIDTH * 40];
+
+
+static void flush_cb(lv_display_t * disp,
+                     const lv_area_t * area,
+                     uint8_t * px_map)
+{
+    uint32_t width = area->x2 - area->x1 + 1;
+    uint32_t height = area->y2 - area->y1 + 1;
+
+    uint16_t * src = (uint16_t *)px_map;
+
+    for(uint32_t y = 0; y < height; y++)
+    {
+        for(uint32_t x = 0; x < width; x++)
+        {
+            framebuffer[(area->y1 + y) * LCD_WIDTH + area->x1 + x]
+                = src[y * width + x];
+        }
+    }
+
+    lv_display_flush_ready(disp);
+}
+
+
+void lv_port_disp_init(void)
+{
+    lv_display_t * disp;
+
+    disp = lv_display_create(LCD_WIDTH, LCD_HEIGHT);
+
+    lv_display_set_color_format(disp, LV_COLOR_FORMAT_RGB565);
+
+    lv_display_set_buffers(
+        disp,
+        buf1,
+        buf2,
+        sizeof(buf1),
+        LV_DISPLAY_RENDER_MODE_PARTIAL
+    );
+
+    lv_display_set_flush_cb(disp, flush_cb);
+
+    lv_display_set_default(disp);
+}
