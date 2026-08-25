@@ -333,7 +333,7 @@ class VitalSimulator:
 if __name__ == "__main__":
     PORT = None
     BAUD_RATE = 115200
-    SCENARIO = "Tachycardia"
+    SCENARIO = "Normal"
 
     simulator = VitalSimulator(
         port=PORT,
