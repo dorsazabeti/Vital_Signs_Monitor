@@ -38,6 +38,7 @@
 #include "usb_host.h"
 #include "gpio.h"
 #include "fmc.h"
+#include "images.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -64,7 +65,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+static lv_obj_t *heart_img;
+static uint8_t heart_frame = 0;
+static const lv_image_dsc_t *heart_frames[] = {&Heart1, &Heart2, &Heart3, &Heart4, &Heart5, &Heart6, &Heart7, &Heart8};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -72,8 +75,9 @@ void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 static void MPU_Config(void);
 void MX_FREERTOS_Init(void);
-/* USER CODE BEGIN PFP */
 
+/* USER CODE BEGIN PFP */
+static void Heart_Timer_Callback(lv_timer_t *timer); 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -105,6 +109,16 @@ static void SDRAM_MPU_Config(void)
   HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
 }
 
+static void Heart_Timer_Callback(lv_timer_t *timer) {  // TODO: change based on heart rate
+  lv_image_set_src(heart_img, heart_frames[heart_frame]);
+  if (heart_frame == 7) {
+    heart_frame = 0;
+    lv_timer_set_period(timer, 180);
+  } else {
+    heart_frame++;
+    lv_timer_set_period(timer, 90);
+  }
+}
 /* USER CODE END 0 */
 
 /**
@@ -188,6 +202,18 @@ int main(void)
   lv_obj_set_style_text_color(label, lv_color_white(), 0);
   lv_obj_center(label);
 
+  lv_obj_invalidate(screen);
+  lv_refr_now(NULL);
+  HAL_GPIO_WritePin(LCD_DISP_GPIO_Port, LCD_DISP_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(LCD_BL_CTRL_GPIO_Port, LCD_BL_CTRL_Pin, GPIO_PIN_SET);
+
+  heart_img = lv_image_create(screen);
+
+  lv_image_set_src(heart_img, heart_frames[0]);
+
+  lv_obj_set_pos(heart_img, 20, 66);
+
+  lv_timer_create(Heart_Timer_Callback, 90, NULL);
   lv_obj_invalidate(screen);
   lv_refr_now(NULL);
   HAL_GPIO_WritePin(LCD_DISP_GPIO_Port, LCD_DISP_Pin, GPIO_PIN_SET);
