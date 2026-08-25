@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+
+# macOS and IDE-local state
+.DS_Store
+.metadata/
+
+# Generated build output
+build/
+Debug/
+Release/

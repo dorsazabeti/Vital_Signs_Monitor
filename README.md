@@ -1,46 +1,92 @@
-# Vital Signs Monitor - IoT Simulator
+# Vital Signs Monitor — PC Simulator
 
-## Project Overview
-This repository contains the PC Simulator subsystem for an embedded Vital Signs Monitor, developed as part of the IoT Laboratory coursework. The overarching objective of the system is to acquire patient biometric data, render it in real-time via a TouchGFX-powered GUI on an STM32 microcontroller, and dispatch network-based alerts (Ethernet) under abnormal clinical conditions. 
+This repository contains the PC-side simulator and the in-progress STM32 code
+for IoT Laboratory Project 1. The simulator generates Heart Rate, SpO2, body
+temperature, and a continuous ECG waveform for meaningful patient scenarios.
+It sends compact newline-delimited JSON to the STM32 through a USB-to-Serial
+UART bridge.
 
-In the current phase, prior to hardware sensor integration, this Python-based simulator is responsible for generating context-aware, real-time medical data (Heart Rate, SpO2, Body Temperature, and ECG signals).
+## Implemented simulator features
 
-## System Architecture
-The project is decoupled into three primary modules:
-1. **Data Generation (PC Simulator):** Simulates biometric data based on specific physiological scenarios (e.g., Normal, Tachycardia, Bradycardia, Hypoxemia) and serializes the output into JSON.
-2. **Embedded Processing (STM32):** Parses incoming UART frames and drives the graphical user interface for real-time visualization.
-3. **Network Alerting:** Monitors predefined thresholds to trigger Ethernet-based notifications (Email/Push).
+- Five scenarios: `Normal`, `Tachycardia`, `Bradycardia`, `Low_SpO2`, and
+  `Abnormal_Temp`
+- Smooth changes within a scenario and continuous transitions between scenarios
+- ECG waveform with P, Q, R, S, and T components, baseline drift, and noise
+- JSON framing at a configurable sample rate (50 Hz by default)
+- Real UART output or safe mock mode when no port is selected
+- Reproducible output through an optional random seed
+- Automated tests for scenario ranges, transitions, ECG, framing, and a
+  PySerial loopback transmission
 
-## Communication Protocol
-Data is transmitted using JSON over a USB-to-Serial UART bridge. 
-* **Baud Rate:** 115200 bps
-* **Data Frame Structure:** 
-  ```json
-  {"scenario": "string", "hr": int, "spo2": int, "temp": float, "ecg": float}
-  ```
+## Setup
 
-## Setup and Execution
+Python 3.8 or newer is required.
 
-### Prerequisites
-* Python 3.8+
-* USB-to-Serial Converter Hardware
-* `pyserial` library
 
-### Installation & Usage
-Clone the repository and install the required serial communication package:
 ```bash
-git clone [https://github.com/dorsazabeti/Vital_Signs_Monitor.git](https://github.com/dorsazabeti/Vital_Signs_Monitor.git)
-cd Vital_Signs_Monitor
-pip install pyserial
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -r requirements.txt
 ```
 
-Execute the main simulator script:
-```bash
-python main.py
-```
-*Note: Prior to execution, ensure the `PORT` variable within `main.py` is configured to match your active UART bridge interface (e.g., `/dev/tty.usbserial-XXXX`).*
+## Usage
 
-## Team and Responsibilities
-* **Dorsa Zabeti:** Python simulator architecture, JSON data framing, vital signs data generation logic, and medical scenario modeling.
-* **Arad Izadidoost:** STM32 board bring-up, UART communication handling, TouchGFX UI implementation, and real-time biometric visualization.
-* **Yasaman Farrokhi:** Network protocol research, component integration testing, Ethernet notification implementation, and anomaly detection logic.
+List detected serial ports:
+
+```bash
+python3 -m simulation --list-ports
+```
+
+Run without hardware in mock mode:
+
+```bash
+python3 -m simulation --scenario Normal --duration 5
+```
+
+Send Tachycardia data to a connected UART adapter:
+
+```bash
+python3 -m simulation \
+  --port /dev/cu.usbserial-XXXX \
+  --scenario Tachycardia \
+  --sample-rate 50
+```
+
+The old launcher also remains valid:
+
+```bash
+python3 main.py --scenario Low_SpO2 --samples 100
+```
+
+Run `python3 -m simulation --help` for all options.
+
+## UART integration contract
+
+The default link is `115200 8N1`. Each transmission is one UTF-8 JSON object
+terminated by `\n`:
+
+```json
+{"scenario":"Normal","hr":74,"spo2":98,"temp":36.8,"ecg":0.021}
+```
+
+Field types, framing rules, error handling, and STM32 receiver requirements are
+specified in [UART_PROTOCOL.md](UART_PROTOCOL.md).
+
+## Tests
+
+Tests use Python's standard library and do not require a board:
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+Hardware UART reception, STM32 JSON parsing, GUI updates, and Ethernet alerts
+must still be verified as part of end-to-end integration.
+
+## Team ownership from the proposal
+
+- **Dorsa Zabeti:** Python simulator, vital-sign generation, JSON framing,
+  scenarios, and simulator documentation
+- **Arad Izadidoost:** STM32 bring-up, UART reception, and embedded integration
+- **Yasaman Farrokhi:** graphical assets/UI and networking/alert work
+- **Shared:** end-to-end testing, final documentation, and demo
