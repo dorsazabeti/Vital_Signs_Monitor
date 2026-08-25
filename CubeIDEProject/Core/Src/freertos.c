@@ -22,6 +22,8 @@
 #include "task.h"
 #include "main.h"
 #include "cmsis_os.h"
+#include "usart.h"
+#include <string.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -168,11 +170,31 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void const * argument)
 {
   /* init code for USB_HOST */
+#if !LCD_BRINGUP_MODE
   MX_USB_HOST_Init();
+#endif
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
   for(;;)
   {
+    if(uart_line_ready)
+    {
+        uart_line_ready = 0;
+
+        HAL_UART_Transmit(
+            &huart1,
+            (uint8_t *)uart_rx_line,
+            strlen(uart_rx_line),
+            100
+        );
+
+        HAL_UART_Transmit(
+            &huart1,
+            (uint8_t *)"\r\n",
+            2,
+            100
+        );
+    }
     uint32_t delay_ms = lv_timer_handler();
 
     if (delay_ms < 1U)

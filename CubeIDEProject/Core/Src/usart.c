@@ -19,12 +19,19 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "usart.h"
+#define UART_RX_BUFFER_SIZE 128
 
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart1;
+#define UART_RX_BUFFER_SIZE 128
+
+uint8_t uart_rx_byte;
+char uart_rx_line[UART_RX_BUFFER_SIZE];
+uint16_t uart_rx_index = 0;
+volatile uint8_t uart_line_ready = 0;
 UART_HandleTypeDef huart6;
 
 /* USART1 init function */
@@ -53,6 +60,7 @@ void MX_USART1_UART_Init(void)
   {
     Error_Handler();
   }
+  HAL_UART_Receive_IT(&huart1, &uart_rx_byte, 1);
   /* USER CODE BEGIN USART1_Init 2 */
 
   /* USER CODE END USART1_Init 2 */
@@ -220,3 +228,30 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 
 /* USER CODE END 1 */
 
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if(huart->Instance == USART1)
+    {
+        if(uart_rx_byte == '\n')
+        {
+            uart_rx_line[uart_rx_index] = '\0';
+            uart_line_ready = 1;
+            uart_rx_index = 0;
+        }
+        else
+        {
+            if(uart_rx_index < UART_RX_BUFFER_SIZE - 1)
+            {
+                uart_rx_line[uart_rx_index++] = uart_rx_byte;
+            }
+            HAL_UART_Transmit(
+                &huart1,
+                (uint8_t *)"RX\n",
+                3,
+                100
+            );
+        }
+
+        HAL_UART_Receive_IT(&huart1, &uart_rx_byte, 1);
+    }
+}

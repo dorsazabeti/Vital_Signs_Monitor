@@ -39,6 +39,7 @@
 #include "gpio.h"
 #include "fmc.h"
 #include "images.h"
+#include "usart.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -66,8 +67,13 @@
 
 /* USER CODE BEGIN PV */
 static lv_obj_t *heart_img;
+static lv_obj_t *heart_rate_label;
+static lv_obj_t *spo2_label;
+static lv_obj_t *temperature_label;
+static lv_obj_t *scenario_label;
 static uint8_t heart_frame = 0;
 static const lv_image_dsc_t *heart_frames[] = {&Heart1, &Heart2, &Heart3, &Heart4, &Heart5, &Heart6, &Heart7, &Heart8};
+static volatile uint8_t lvgl_initialized = 0U;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -78,12 +84,16 @@ void MX_FREERTOS_Init(void);
 
 /* USER CODE BEGIN PFP */
 static void Heart_Timer_Callback(lv_timer_t *timer); 
+static lv_obj_t *Vitals_CreateCard(lv_obj_t *parent, int32_t x);
+static lv_obj_t *Vitals_CreateLabel(lv_obj_t *parent, const char *text, lv_color_t color);
+static void Vitals_CreateDashboard(lv_obj_t *screen);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
 #define LCD_FRAME_BUFFER_ADDRESS  0xC0000000U
+#define FMC_REGISTER_ADDRESS      0xA0000000U
 #define LCD_WIDTH                 480U
 #define LCD_HEIGHT                272U
 
@@ -106,7 +116,109 @@ static void SDRAM_MPU_Config(void)
   MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
 
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+  /* Allow access to the FMC control registers hidden by MPU region 0. */
+  MPU_InitStruct.Number = MPU_REGION_NUMBER2;
+  MPU_InitStruct.BaseAddress = FMC_REGISTER_ADDRESS;
+  MPU_InitStruct.Size = MPU_REGION_SIZE_64KB;
+  MPU_InitStruct.SubRegionDisable = 0x00;
+  MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
+  MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
+  MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
+  MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
+  MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
+
+  HAL_MPU_ConfigRegion(&MPU_InitStruct);
   HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+}
+
+static uint8_t SDRAM_Test(void)
+{
+  volatile uint32_t *sdram = (volatile uint32_t *)LCD_FRAME_BUFFER_ADDRESS;
+  static const uint32_t offsets[] = {0U, 1U, 0x100U, 0x1000U, 0x10000U, 0x100000U, 0x1FFFFFU};
+  static const uint32_t patterns[] = {0x00000000U, 0xFFFFFFFFU, 0xAAAAAAAAU, 0x55555555U, 0x12345678U, 0x89ABCDEFU, 0x0F0FF0F0U};
+
+  for (uint32_t index = 0U; index < (sizeof(offsets) / sizeof(offsets[0])); index++)
+  {
+    sdram[offsets[index]] = patterns[index];
+  }
+
+  __DSB();
+
+  for (uint32_t index = 0U; index < (sizeof(offsets) / sizeof(offsets[0])); index++)
+  {
+    if (sdram[offsets[index]] != patterns[index])
+    {
+      return 0U;
+    }
+  }
+
+  return 1U;
+}
+
+static void LCD_ShowSDRAMError(void)
+{
+  __HAL_LTDC_LAYER_DISABLE(&hltdc, 0U);
+  WRITE_REG(hltdc.Instance->BCCR, 0x00FF00FFU);
+  __HAL_LTDC_RELOAD_IMMEDIATE_CONFIG(&hltdc);
+  HAL_GPIO_WritePin(LCD_DISP_GPIO_Port, LCD_DISP_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(LCD_BL_CTRL_GPIO_Port, LCD_BL_CTRL_Pin, GPIO_PIN_SET);
+
+  while (1)
+  {
+  }
+}
+
+static void LCD_ShowFlashReference(void)
+{
+  LTDC_LayerCfgTypeDef layer = {0};
+
+  layer.WindowX0 = 180U;
+  layer.WindowX1 = 300U;
+  layer.WindowY0 = 82U;
+  layer.WindowY1 = 189U;
+  layer.PixelFormat = LTDC_PIXEL_FORMAT_ARGB8888;
+  layer.Alpha = 255U;
+  layer.Alpha0 = 0U;
+  layer.BlendingFactor1 = LTDC_BLENDING_FACTOR1_PAxCA;
+  layer.BlendingFactor2 = LTDC_BLENDING_FACTOR2_PAxCA;
+  layer.FBStartAdress = (uint32_t)Heart1.data;
+  layer.ImageWidth = 120U;
+  layer.ImageHeight = 107U;
+
+  WRITE_REG(hltdc.Instance->BCCR, 0x00102A43U);
+
+  if (HAL_LTDC_ConfigLayer(&hltdc, &layer, 0U) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  HAL_GPIO_WritePin(LCD_DISP_GPIO_Port, LCD_DISP_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(LCD_BL_CTRL_GPIO_Port, LCD_BL_CTRL_Pin, GPIO_PIN_SET);
+}
+
+static void LCD_ConfigureSDRAMLayer(void)
+{
+  LTDC_LayerCfgTypeDef layer = {0};
+
+  layer.WindowX0 = 0U;
+  layer.WindowX1 = LCD_WIDTH;
+  layer.WindowY0 = 0U;
+  layer.WindowY1 = LCD_HEIGHT;
+  layer.PixelFormat = LTDC_PIXEL_FORMAT_RGB565;
+  layer.Alpha = 255U;
+  layer.Alpha0 = 0U;
+  layer.BlendingFactor1 = LTDC_BLENDING_FACTOR1_CA;
+  layer.BlendingFactor2 = LTDC_BLENDING_FACTOR2_CA;
+  layer.FBStartAdress = LCD_FRAME_BUFFER_ADDRESS;
+  layer.ImageWidth = LCD_WIDTH;
+  layer.ImageHeight = LCD_HEIGHT;
+
+  if (HAL_LTDC_ConfigLayer(&hltdc, &layer, 0U) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 static void Heart_Timer_Callback(lv_timer_t *timer) {  // TODO: change based on heart rate
@@ -118,6 +230,105 @@ static void Heart_Timer_Callback(lv_timer_t *timer) {  // TODO: change based on 
     heart_frame++;
     lv_timer_set_period(timer, 90);
   }
+}
+
+static lv_obj_t *Vitals_CreateCard(lv_obj_t *parent, int32_t x)
+{
+  lv_obj_t *card = lv_obj_create(parent);
+  lv_obj_set_size(card, 148, 196);
+  lv_obj_set_pos(card, x, 38);
+  lv_obj_set_scrollable(card, false);
+  lv_obj_set_style_bg_color(card, lv_color_hex(0x173D5BU), 0);
+  lv_obj_set_style_bg_opa(card, LV_OPA_COVER, 0);
+  lv_obj_set_style_border_color(card, lv_color_hex(0x2A6687U), 0);
+  lv_obj_set_style_border_width(card, 1, 0);
+  lv_obj_set_style_radius(card, 12, 0);
+  lv_obj_set_style_pad_all(card, 0, 0);
+  return card;
+}
+
+static lv_obj_t *Vitals_CreateLabel(lv_obj_t *parent, const char *text, lv_color_t color)
+{
+  lv_obj_t *label = lv_label_create(parent);
+  lv_label_set_text(label, text);
+  lv_obj_set_style_text_color(label, color, 0);
+  return label;
+}
+
+void Vitals_UpdateUI(uint16_t heart_rate, uint8_t spo2, int16_t temperature_tenths, const char *scenario)
+{
+  if ((heart_rate_label == NULL) || (spo2_label == NULL) ||
+      (temperature_label == NULL) || (scenario_label == NULL))
+  {
+    return;
+  }
+
+  lv_label_set_text_fmt(heart_rate_label, "%u BPM", (unsigned int)heart_rate);
+  lv_label_set_text_fmt(spo2_label, "%u %%", (unsigned int)spo2);
+  lv_label_set_text_fmt(temperature_label, "%d.%d C",
+                        (int)(temperature_tenths / 10),
+                        (int)(temperature_tenths % 10));
+  lv_label_set_text_fmt(scenario_label, "%s | SIMULATION READY", scenario);
+}
+
+static void Vitals_CreateDashboard(lv_obj_t *screen)
+{
+  const lv_color_t caption_color = lv_color_hex(0xB8D5E5U);
+  lv_obj_t *heart_card = Vitals_CreateCard(screen, 8);
+  lv_obj_t *temperature_card = Vitals_CreateCard(screen, 166);
+  lv_obj_t *spo2_card = Vitals_CreateCard(screen, 324);
+  lv_obj_t *title;
+  lv_obj_t *caption;
+  lv_obj_t *image;
+
+  title = Vitals_CreateLabel(screen, "VITAL SIGNS MONITOR", lv_color_white());
+  lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 10);
+
+  caption = Vitals_CreateLabel(heart_card, "HEART RATE", caption_color);
+  lv_obj_align(caption, LV_ALIGN_TOP_MID, 0, 8);
+
+  heart_img = lv_image_create(heart_card);
+  lv_image_set_src(heart_img, heart_frames[0]);
+  lv_obj_set_pos(heart_img, 13, 32);
+
+  heart_rate_label = Vitals_CreateLabel(heart_card, "-- BPM", lv_color_white());
+  lv_obj_align(heart_rate_label, LV_ALIGN_BOTTOM_MID, 0, -12);
+
+  caption = Vitals_CreateLabel(temperature_card, "TEMPERATURE", caption_color);
+  lv_obj_align(caption, LV_ALIGN_TOP_MID, 0, 8);
+
+  image = lv_image_create(temperature_card);
+  lv_image_set_src(image, &Thermometer);
+  lv_obj_set_pos(image, 7, 42);
+
+  image = lv_image_create(temperature_card);
+  lv_image_set_src(image, &Bubble);
+  lv_obj_set_pos(image, 39, 59);
+
+  temperature_label = Vitals_CreateLabel(temperature_card, "--.- C", lv_color_hex(0x102A43U));
+  lv_obj_set_width(temperature_label, 78);
+  lv_obj_set_style_text_align(temperature_label, LV_TEXT_ALIGN_CENTER, 0);
+  lv_obj_set_pos(temperature_label, 57, 79);
+
+  caption = Vitals_CreateLabel(spo2_card, "BLOOD OXYGEN", caption_color);
+  lv_obj_align(caption, LV_ALIGN_TOP_MID, 0, 8);
+
+  image = lv_image_create(spo2_card);
+  lv_image_set_src(image, &Gauge);
+  lv_obj_set_pos(image, 32, 42);
+
+  image = lv_image_create(spo2_card);
+  lv_image_set_src(image, &GaugeArrow);
+  lv_obj_set_pos(image, 32, 42);
+
+  spo2_label = Vitals_CreateLabel(spo2_card, "-- %", lv_color_white());
+  lv_obj_align(spo2_label, LV_ALIGN_BOTTOM_MID, 0, -12);
+
+  scenario_label = Vitals_CreateLabel(screen, "STARTING SIMULATION", caption_color);
+  lv_obj_align(scenario_label, LV_ALIGN_BOTTOM_MID, 0, -7);
+
+  Vitals_UpdateUI(76U, 98U, 370, "Normal");
+  lv_timer_create(Heart_Timer_Callback, 90, NULL);
 }
 /* USER CODE END 0 */
 
@@ -157,15 +368,18 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_LTDC_Init();
+  LCD_ShowFlashReference();
+  HAL_Delay(3000U);
+  MX_FMC_Init();
+#if !LCD_BRINGUP_MODE
   MX_ADC3_Init();
   MX_CRC_Init();
   MX_DCMI_Init();
   MX_DMA2D_Init();
   MX_ETH_Init();
-  MX_FMC_Init();
   MX_I2C1_Init();
   MX_I2C3_Init();
-  MX_LTDC_Init();
   MX_QUADSPI_Init();
   MX_RTC_Init();
   MX_SAI2_Init();
@@ -181,15 +395,28 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART6_UART_Init();
   MX_FATFS_Init();
+#endif
   /* USER CODE BEGIN 2 */
   uint16_t *frame_buffer = (uint16_t *)LCD_FRAME_BUFFER_ADDRESS;
+
+  if (SDRAM_Test() == 0U)
+  {
+    LCD_ShowSDRAMError();
+  }
 
   for (uint32_t pixel = 0; pixel < (LCD_WIDTH * LCD_HEIGHT); pixel++)
   {
     frame_buffer[pixel] = 0xF800U;
   }
 
+  __DSB();
+  LCD_ConfigureSDRAMLayer();
+  HAL_GPIO_WritePin(LCD_DISP_GPIO_Port, LCD_DISP_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(LCD_BL_CTRL_GPIO_Port, LCD_BL_CTRL_Pin, GPIO_PIN_SET);
+  HAL_Delay(2000U);
+
   lv_init();
+  lvgl_initialized = 1U;
 
   lv_port_disp_init();
 
@@ -197,23 +424,13 @@ int main(void)
   lv_obj_set_style_bg_color(screen, lv_color_hex(0x102A43U), 0);
   lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, 0);
 
-  lv_obj_t * label = lv_label_create(screen);
-  lv_label_set_text(label, "Vital Signs Monitor");
-  lv_obj_set_style_text_color(label, lv_color_white(), 0);
-  lv_obj_center(label);
+  Vitals_CreateDashboard(screen);
 
   lv_obj_invalidate(screen);
   lv_refr_now(NULL);
   HAL_GPIO_WritePin(LCD_DISP_GPIO_Port, LCD_DISP_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(LCD_BL_CTRL_GPIO_Port, LCD_BL_CTRL_Pin, GPIO_PIN_SET);
 
-  heart_img = lv_image_create(screen);
-
-  lv_image_set_src(heart_img, heart_frames[0]);
-
-  lv_obj_set_pos(heart_img, 20, 66);
-
-  lv_timer_create(Heart_Timer_Callback, 90, NULL);
   lv_obj_invalidate(screen);
   lv_refr_now(NULL);
   HAL_GPIO_WritePin(LCD_DISP_GPIO_Port, LCD_DISP_Pin, GPIO_PIN_SET);
@@ -374,7 +591,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-  if (htim->Instance == TIM6)
+  if ((htim->Instance == TIM6) && (lvgl_initialized != 0U))
   {
     lv_tick_inc(1U);
   }

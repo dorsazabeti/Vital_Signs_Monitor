@@ -6,6 +6,7 @@ add_compile_definitions(
     STM32F746xx
     USE_HAL_DRIVER
     LV_CONF_INCLUDE_SIMPLE
+    LCD_BRINGUP_MODE=1
 )
 
 set(CMAKE_C_STANDARD 11)
@@ -38,6 +39,7 @@ set(STARTUP_FILE Core/Startup/startup_stm32f746nghx.s)
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     Core/Src/*.c
+    Core/Images/*.c
     Drivers/STM32F7xx_HAL_Driver/Src/*.c
     FATFS/App/*.c
     FATFS/Target/*.c

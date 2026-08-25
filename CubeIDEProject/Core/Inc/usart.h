@@ -51,5 +51,9 @@ void MX_USART6_UART_Init(void);
 }
 #endif
 
+extern uint8_t uart_rx_byte;
+extern char uart_rx_line[128];
+extern volatile uint8_t uart_line_ready;
+
 #endif /* __USART_H__ */
 
