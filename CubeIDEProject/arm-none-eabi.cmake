@@ -1,9 +1,8 @@
 set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_SYSTEM_PROCESSOR cortex-m7)
 
-set(STM32_GNU_TOOLS_PATH
-    "/Users/arad/Library/Application Support/stm32cube/bundles/gnu-tools-for-stm32/14.3.1+st.2/bin"
-    CACHE PATH "GNU Tools for STM32 binary directory")
+set(STM32_GNU_TOOLS_PATH "" CACHE PATH
+    "Optional directory containing the GNU Tools for STM32 executables")
 
 find_program(CMAKE_C_COMPILER arm-none-eabi-gcc
     HINTS "${STM32_GNU_TOOLS_PATH}" REQUIRED)

@@ -42,9 +42,11 @@ static NetworkAlertSeverity NetworkAlertLogic_Severity(const NetworkAlertVitals 
     return NETWORK_ALERT_SEVERITY_NORMAL;
   }
 
-  if ((vitals->heart_rate < 45U) || (vitals->heart_rate > 130U) ||
-      (vitals->spo2 < 88U) || (vitals->temperature_tenths < 340) ||
-      (vitals->temperature_tenths >= 395))
+  if ((vitals->heart_rate < VITALS_HR_CRITICAL_LOW) ||
+      (vitals->heart_rate > VITALS_HR_CRITICAL_HIGH) ||
+      (vitals->spo2 < VITALS_SPO2_CRITICAL_LOW) ||
+      (vitals->temperature_tenths < VITALS_TEMP_CRITICAL_LOW) ||
+      (vitals->temperature_tenths >= VITALS_TEMP_CRITICAL_HIGH))
   {
     return NETWORK_ALERT_SEVERITY_CRITICAL;
   }

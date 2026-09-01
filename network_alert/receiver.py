@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import platform
+import re
 import socket
 import subprocess
 import sys
@@ -93,8 +94,11 @@ def parse_alert(datagram: bytes) -> AlertMessage:
         raise AlertValidationError("unknown event")
     if severity not in VALID_SEVERITIES:
         raise AlertValidationError("unknown severity")
-    if not isinstance(scenario, str) or not scenario or len(scenario) > 23:
-        raise AlertValidationError("scenario must be 1..23 characters")
+    if (
+        not isinstance(scenario, str)
+        or re.fullmatch(r"[A-Za-z0-9 _-]{1,23}", scenario) is None
+    ):
+        raise AlertValidationError("scenario must use 1..23 safe characters")
     if not isinstance(reasons, list) or not all(reason in VALID_REASONS for reason in reasons):
         raise AlertValidationError("reasons contains an unknown value")
     if len(reasons) != len(set(reasons)):
@@ -202,6 +206,8 @@ def build_argument_parser() -> argparse.ArgumentParser:
 def run_receiver(args: argparse.Namespace) -> int:
     if not 1 <= args.port <= 65535:
         raise SystemExit("port must be in 1..65535")
+    if args.webhook_timeout <= 0:
+        raise SystemExit("webhook timeout must be positive")
     deduplicator = SequenceDeduplicator()
 
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as server:

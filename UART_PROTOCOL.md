@@ -43,8 +43,15 @@ it remains comfortably below the capacity of 115200 baud UART.
 ## Receiver requirements
 
 - Use at least a 128-byte line buffer.
+- Queue complete lines so a short UI or Ethernet operation does not overwrite
+  the next 50 Hz sample. The current firmware queue depth is eight frames.
 - Update displayed values only after a complete, valid frame is parsed.
 - Ignore unknown fields so the protocol can be extended later.
 - Treat a missing required field, invalid JSON, or an overlong line as a bad
   frame; discard it without blocking subsequent frames.
 - Consider data stale if no valid frame arrives for two seconds.
+- Parse `temp` to tenths of a degree and `ecg` to thousandths without using
+  floating point in the firmware. Negative ECG samples must preserve their
+  sign (for example, `-0.025` becomes `-25`).
+- The current firmware accepts HR `30..220`, SpO2 `50..100`, temperature
+  `32.0..43.0 C`, and ECG approximately `-2.000..3.000`.

@@ -1,10 +1,11 @@
 # Vital Signs Monitor — PC Simulator
 
-This repository contains the PC-side simulator and the in-progress STM32 code
-for IoT Laboratory Project 1. The simulator generates Heart Rate, SpO2, body
-temperature, and a continuous ECG waveform for meaningful patient scenarios.
-It sends compact newline-delimited JSON to the STM32 through a USB-to-Serial
-UART bridge.
+This repository contains the complete software path for IoT Laboratory Project
+1: the PC-side patient simulator, STM32F746G-DISCO firmware, LVGL dashboard,
+and Ethernet alert receiver. The simulator generates Heart Rate, SpO2, body
+temperature, and a continuous ECG waveform for meaningful patient scenarios,
+then sends compact newline-delimited JSON through the board's USB Virtual COM
+Port.
 
 ## Implemented simulator features
 
@@ -14,9 +15,24 @@ UART bridge.
 - ECG waveform with P, Q, R, S, and T components, baseline drift, and noise
 - JSON framing at a configurable sample rate (50 Hz by default)
 - Real UART output or safe mock mode when no port is selected
+- Automatic serial reconnection after the board or port is disconnected
 - Reproducible output through an optional random seed
 - Automated tests for scenario ranges, transitions, ECG, framing, and a
   PySerial loopback transmission
+
+## Implemented firmware features
+
+- Interrupt-driven USART1 reception with an eight-frame queue, overflow/error
+  counters, and automatic receive recovery
+- Validated fixed-point parsing for all required fields, including negative ECG
+  samples
+- LVGL dashboard with live HR, SpO2, temperature, scenario, animated heart,
+  moving gauge/thermometer indicators, and a scrolling ECG chart
+- Shared normal/warning/critical thresholds for both the UI and network alerts
+- A visible `NO DATA` state when no valid UART frame arrives for two seconds
+- Static-IP Ethernet with ARP, ICMP echo reply, and UDP/JSON alerts
+- Debounced abnormal-state detection, 30-second reminder rate limiting, and a
+  recovery event
 
 ## Setup
 
@@ -93,14 +109,33 @@ documented in
 
 ## Tests
 
-Tests use Python's standard library and do not require a board:
+Run the complete host-side test suite (Python plus the two independent C
+modules) with:
 
 ```bash
-python3 -m unittest discover -s tests -v
+./scripts/run_tests.sh
 ```
 
-Hardware UART reception, STM32 JSON parsing, GUI updates, and the final
-Ethernet Link/Ping/UDP path must still be verified on the physical board.
+The Python portion can also be run separately with
+`python3 -m unittest discover -s tests -v`.
+
+## Firmware build
+
+Install GNU Tools for STM32/Arm and CMake, then run from the repository root:
+
+```bash
+cmake -S CubeIDEProject -B CubeIDEProject/build \
+  -DCMAKE_TOOLCHAIN_FILE=arm-none-eabi.cmake
+cmake --build CubeIDEProject/build -j4
+```
+
+If `arm-none-eabi-gcc` is not on `PATH`, also pass
+`-DSTM32_GNU_TOOLS_PATH=/absolute/path/to/toolchain/bin`.
+
+The software tests are complete. Flashing the generated firmware and recording
+the final LCD, UART, Ethernet Link/Ping/UDP results still require the physical
+board and cable; see the checklist in
+[CubeIDEProject/docs/PROJECT_CONTEXT.md](CubeIDEProject/docs/PROJECT_CONTEXT.md).
 
 ## Team ownership from the proposal
 

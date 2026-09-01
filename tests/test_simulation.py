@@ -3,10 +3,12 @@ import random
 import unittest
 from contextlib import redirect_stdout
 from io import StringIO
+from unittest.mock import patch
 
 from simulation.main import VitalSimulator
 from simulation.patient import PatientModel
 from simulation.scenarios import SCENARIOS
+from simulation import uart as uart_module
 from simulation.uart import UARTTransport, encode_frame
 
 
@@ -28,6 +30,18 @@ class FakeTransport:
 
     def close(self):
         self.closed = True
+
+
+class RecordingSerial:
+    def __init__(self):
+        self.is_open = True
+        self.frames = []
+
+    def write(self, frame):
+        self.frames.append(frame)
+
+    def close(self):
+        self.is_open = False
 
 
 class PatientModelTests(unittest.TestCase):
@@ -108,6 +122,21 @@ class UARTTests(unittest.TestCase):
         self.assertEqual(3, count)
         self.assertEqual(3, len(transport.frames))
         self.assertTrue(transport.closed)
+
+    def test_transport_reconnects_after_initial_open_failure(self):
+        recovered_serial = RecordingSerial()
+        with patch.object(
+            uart_module.pyserial,
+            "serial_for_url",
+            side_effect=[uart_module.pyserial.SerialException("disconnected"), recovered_serial],
+        ):
+            transport = UARTTransport("test-port", reconnect_interval=0)
+            self.assertFalse(transport.connect())
+            mode, _ = transport.send(
+                {"scenario": "Normal", "hr": 72, "spo2": 98, "temp": 36.8, "ecg": 0.1}
+            )
+            self.assertEqual("Sent", mode)
+            self.assertEqual(1, len(recovered_serial.frames))
 
 
 if __name__ == "__main__":

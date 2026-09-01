@@ -53,14 +53,20 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     Middlewares/ST/STM32_USB_Host_Library/Class/CDC/Src/*.c
 )
 
+# Bubble.c was generated from a 734x793 ARGB image (>2.3 MB) and is no longer
+# used by the dashboard. Excluding it avoids wasting build time and Flash.
+list(FILTER SOURCES EXCLUDE REGEX ".*/Core/Images/Bubble\\.c$")
+
 list(APPEND SOURCES ${STARTUP_FILE})
 
 add_executable(${PROJECT_NAME}.elf ${SOURCES})
 
 target_compile_options(${PROJECT_NAME}.elf PRIVATE
+    -Os
     -ffunction-sections
     -fdata-sections
     -Wall
+    -Wextra
 )
 
 target_link_options(${PROJECT_NAME}.elf PRIVATE
@@ -74,6 +80,7 @@ target_link_options(${PROJECT_NAME}.elf PRIVATE
 )
 
 add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
+    COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${PROJECT_NAME}.elf>
     COMMAND ${CMAKE_OBJCOPY} -O ihex
             $<TARGET_FILE:${PROJECT_NAME}.elf>
             ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.hex
