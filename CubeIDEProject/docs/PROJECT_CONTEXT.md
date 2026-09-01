@@ -93,7 +93,7 @@ ISR فقط بایت و صف را مدیریت می‌کند. Parse، LVGL و م�
 - `tests/test_network_alert_receiver.py`: اعتبارسنجی و dedup پیام شبکه
 - `tests/vitals_parser_test.c`: Parser و ECG مثبت/منفی/خراب
 - `tests/network_alert_logic_test.c`: Threshold، debounce، reminder و recovery
-- `scripts/run_tests.sh`: اجرای یکجای تمام تست‌های Python و C
+- `scripts/run_tests.sh`: اجرای یکجای تمام تست‌های Python و C؛ در صورت وجود `.venv` به‌طور خودکار Python همان محیط را انتخاب می‌کند و در غیر این صورت از متغیر `PYTHON` یا `python3` استفاده می‌کند.
 - `network_alert/receiver.py`: UDP receiver، log، اعلان و webhook
 
 ## ۵. رفتار UART و Parser
@@ -114,6 +114,8 @@ ISR فقط بایت و صف را مدیریت می‌کند. Parse، LVGL و م�
 - اگر دو ثانیه فریم معتبر نرسد، UI پیام `NO DATA | CHECK UART` نشان می‌دهد.
 - اگر پورت سریال قطع شود، شبیه‌ساز Crash نمی‌کند و هر دو ثانیه برای اتصال مجدد تلاش می‌کند.
 
+عیب‌یابی ثبت‌شده در ۱ سپتامبر ۲۰۲۶: Python سراسری مک آراد پکیج اشتباه `serial==0.0.97` را از `site-packages` بارگذاری می‌کرد. این پکیج PySerial نیست و APIهای `Serial` و `serial_for_url` را ندارد؛ در نتیجه شبیه‌ساز با وجود `/dev/cu.usbmodem2103` وارد Mock mode می‌شد. راه‌حل توصیه‌شده استفاده از `.venv` پروژه و نصب `requirements.txt` شامل `pyserial>=3.5` است. برای تست UART/LCD فقط کابل Mini-USB متصل به درگاه ST-LINK/VCP لازم است و کابل LAN فقط برای تست Ethernet/UDP کاربرد دارد.
+
 ## ۶. UI و Thresholdها
 
 Threshold مشترک UI و Ethernet:
@@ -124,9 +126,9 @@ Threshold مشترک UI و Ethernet:
 | SpO2 | کمتر از ۹۲٪ | کمتر از ۸۸٪ |
 | Temperature | کمتر از ۳۵٫۰ یا حداقل ۳۸٫۰ | کمتر از ۳۴٫۰ یا حداقل ۳۹٫۵ |
 
-Border هر کارت به‌صورت مستقل Normal، Warning یا Critical می‌شود. متن پایین صفحه سناریو و مهم‌ترین هشدار را نشان می‌دهد. سرعت انیمیشن قلب با HR تنظیم می‌شود. عقربه SpO2 و ستون دما با مقدار زنده حرکت می‌کنند. نمودار ECG صد نمونه آخر را با نرخ ورودی نمایش می‌دهد و متن اعداد با نرخ ۱۰ هرتز به‌روزرسانی می‌شود تا بار رندر بی‌دلیل ایجاد نشود.
+Border هر کارت به‌صورت مستقل Normal، Warning یا Critical می‌شود. متن پایین صفحه سناریو و مهم‌ترین هشدار را نشان می‌دهد. سرعت انیمیشن قلب با HR تنظیم می‌شود. عقربه SpO2 با مقدار زنده حرکت می‌کند و دما داخل Bubble تصویری کنار دماسنج نمایش داده می‌شود. نمودار ECG صد مقدار رسم‌شده آخر را بدون Point marker نشان می‌دهد؛ Firmware از هر سه نمونه UART یک نمونه را وارد نمودار می‌کند تا سرعت پیشروی یک‌سوم شود، در حالی که Parse و شبکه همچنان همه نمونه‌ها را دریافت می‌کنند. متن اعداد با نرخ ۱۰ هرتز به‌روزرسانی می‌شود تا بار رندر بی‌دلیل ایجاد نشود.
 
-تصویر قدیمی `Bubble.c` بیش از ۲٫۳ مگابایت داده ARGB داشت و برای Flash یک مگابایتی مناسب نبود. UI نهایی به جای آن از Bar سبک LVGL استفاده می‌کند و CMake فایل Bubble را از Build کنار می‌گذارد؛ فایل Asset برای سابقه طراحی حذف نشده است.
+PNG اصلی Bubble دارای Canvas بزرگ `734x793` بود و تبدیل مستقیم آن بیش از ۲٫۳ مگابایت Flash نیاز داشت. نسخه فعلی `Bubble.c` از تاریخچه سالم پروژه، واقعاً به `105x61` Resize شده و فقط `25620` بایت داده دارد؛ بنابراین دوباره وارد CMake و UI شد. Bubble حول مرکز خود ۱۸۰ درجه چرخانده شده تا نوک Message box به سمت چپ و دماسنج باشد؛ Label دما شیء جداگانه است و وارونه نمی‌شود. تصویر قلب نیز با توجه به عرض ۱۲۰ پیکسلی asset در کارت ۱۴۸ پیکسلی، روی مختصات افقی `14` قرار گرفته و دقیقاً Center شده است. حالت ECG شبیه مانیتور پزشکی با Sweep چپ‌به‌راست و Reset در انتهای صفحه فعلاً طبق تصمیم تیم به مرحله بعد موکول شده و Update mode همچنان `SHIFT` است.
 
 ## ۷. شبکه و هشدار
 
@@ -140,6 +142,8 @@ Border هر کارت به‌صورت مستقل Normal، Warning یا Critical �
 بعد از سه نمونه غیرعادی پیام `triggered` ساخته می‌شود. اگر وضعیت ادامه یابد حداکثر هر ۳۰ ثانیه یک `reminder` ارسال می‌شود. بعد از سه نمونه عادی پیام `recovered` فرستاده می‌شود. پیام شامل version، sequence، uptime، severity، scenario، مقادیر و reasonها است.
 
 پیاده‌سازی برای نیاز Demo عمداً کوچک است و یک TCP/IP stack عمومی نیست: ARP، IPv4/UDP خروجی و ICMP Echo را پوشش می‌دهد. راهنمای کابل، receiver و webhook در `docs/NETWORK_ALERT.md` است.
+
+در Build فعلی `LCD_BRINGUP_MODE=1` باقی مانده است، اما شبکه غیرفعال نیست: `StartDefaultTask()` تابع `NetworkAlert_Init()` را بدون شرط اجرا می‌کند و این تابع در صورت Reset بودن Handle اترنت، خودش `MX_ETH_Init()` را فراخوانی می‌کند. بنابراین BIN موفق تولیدشده برای تست هم‌زمان LCD، UART و Ethernet مناسب است و برای فعال‌کردن شبکه نیازی به Build مجدد یا تغییر این Macro نیست.
 
 ## ۸. اجرا و تست
 
@@ -182,10 +186,11 @@ python3 -m network_alert --log alerts.jsonl
 - تست C منطق هشدار با Address/Undefined Sanitizer: موفق
 - تست C Parser با Address/Undefined Sanitizer: موفق
 - Syntax check فایل‌های تغییرکرده Firmware با هشدارهای سخت‌گیرانه: موفق
+- Runner عادی `./scripts/run_tests.sh` بدون Activate دستی نیز موفق است، چون `.venv` را خودکار انتخاب می‌کند.
 - Build نهایی ARM در محیط یکپارچه‌سازی هم‌تیمی به علت نبود Toolchain اجرا نشد.
 - روی مک آراد Toolchain موجود است. بیلد پیش از دریافت نسخه یکپارچه تا مرحله Link رفت و به علت `Bubble.c` حدود ۲٫۳ مگابایتی با Flash overflow متوقف شد.
-- پس از Pull و خارج شدن Bubble از CMake، Build کامل `MinSizeRel` در ۱ سپتامبر ۲۰۲۶ موفق شد: `text=779752`، `data=1808`، `bss=198304` و مجموع گزارش‌شده توسط ابزار Size برابر `979864` بایت است. مصرف واقعی Flash از جمع `text+data` برابر `781560` بایت، حدود ۷۴٫۵٪ از Flash یک مگابایتی، است.
-- خروجی‌های `build/VitalSignsMonitor.elf`، `build/VitalSignsMonitor.hex` و `build/VitalSignsMonitor.bin` تولید و وجودشان تأیید شد؛ اندازه BIN حدود ۷۶۳ KiB است.
+- پس از Pull و خارج شدن نسخه بزرگ Bubble از CMake، Build کامل `MinSizeRel` در ۱ سپتامبر ۲۰۲۶ موفق شد. سپس نسخه Resize‌شده Bubble دوباره وارد UI شد و Build نهایی پس از Center کردن قلب و تغییر جهت Bubble نیز موفق بود: `text=805168`، `data=1808` و `bss=198304`. مصرف واقعی Flash از جمع `text+data` برابر `806976` بایت، حدود ۷۷٪ از Flash یک مگابایتی، است.
+- خروجی‌های جدید `build/VitalSignsMonitor.elf`، `build/VitalSignsMonitor.hex` و `build/VitalSignsMonitor.bin` پس از تغییر Bubble و ECG دوباره تولید شدند.
 
 Build Firmware از ریشه مخزن روی مک آراد:
 
@@ -214,15 +219,18 @@ cmake --build CubeIDEProject/build -j4
 - مشترک کردن Thresholdهای UI و شبکه و افزودن Warning/Critical
 - افزودن reconnect شبیه‌ساز و تست قطع/اتصال مجدد
 - حذف مسیر شخصی عضو تیم از Toolchain CMake
-- خارج کردن Asset بسیار بزرگ Bubble از Build
+- جایگزینی Asset بسیار بزرگ Bubble با نسخه Resize‌شده ۲۵ کیلوبایتی و استفاده مجدد از آن در UI
+- حذف Point markerهای ECG و کاهش سرعت پیشروی نمودار به یک‌سوم
+- Center کردن تصویر قلب و اصلاح جهت Message bubble دما
+- اصلاح Runner تست برای انتخاب خودکار `.venv`
 - افزودن Runner یکپارچه تست و به‌روزرسانی مستندات
 
 ## ۱۰. تنها کارهای باقی‌مانده برای تحویل واقعی
 
 این موارد را نمی‌توان بدون برد و کابل از داخل محیط توسعه انجام داد:
 
-1. Flash کردن BIN یا ELF جدید روی برد.
-2. مشاهده داشبورد و اجرای پنج سناریو روی UART؛ ثبت عکس یا ویدئو.
+1. Flash کردن BIN یا ELF جدید روی برد و تأیید Center بودن قلب، جهت Bubble، خوانایی دما، حذف نقاط ECG و مناسب بودن سرعت یک‌سوم.
+2. اجرای پنج سناریو روی UART و ثبت عکس یا ویدئو از Dashboard و ECG.
 3. توقف شبیه‌ساز و تأیید ظاهر شدن `NO DATA` حداکثر بعد از دو ثانیه.
 4. تنظیم Ethernet مک روی `192.168.7.1/24` و تأیید Link و `ping 192.168.7.2`.
 5. اجرای `Low_SpO2`، مشاهده `triggered` و ثبت خط در `alerts.jsonl`؛ سپس Normal و مشاهده `recovered`.
@@ -265,6 +273,8 @@ c64c66c nothing
 d483696 fix
 ```
 
-فقط روی نام‌ها و محتوای مستندات کانتکست Conflict ایجاد کرد. نتیجه با یک فایل canonical به نام `docs/PROJECT_CONTEXT.md` حل شد و نسخه‌های تکراری `PROJECT_CONTEXT.txt` و `PROJECT_CONTEXT2.md` از نتیجه Merge کنار گذاشته شدند. فایل‌های Firmware، شبکه و شبیه‌سازِ دریافتی بدون Conflict وارد Index شده‌اند. Merge تا زمان بررسی Build و Commit نهایی باز است.
+فقط روی نام‌ها و محتوای مستندات کانتکست Conflict ایجاد کرد. نتیجه با یک فایل canonical به نام `docs/PROJECT_CONTEXT.md` حل شد و نسخه‌های تکراری `PROJECT_CONTEXT.txt` و `PROJECT_CONTEXT2.md` از نتیجه Merge کنار گذاشته شدند. Merge در Commit `e932f83` تکمیل و روی `origin/main` Push شد.
 
 سه فایل cache تولیدی CMake که در Commit محلی `nothing` اشتباهی Track شده بودند (`CubeIDEProject/CMakeCache.txt` و دو فایل داخل `CubeIDEProject/CMakeFiles`) نیز پیش از Merge commit از مخزن حذف شدند. خروجی صحیح Build فقط در پوشه نادیده‌گرفته‌شده `CubeIDEProject/build/` قرار دارد.
+
+پس از آن، مجموعه اصلاحات نهایی UI شامل Bubble کوچک، ECG بدون نقطه و با سرعت یک‌سوم، Center شدن قلب، جهت صحیح Bubble و اصلاح Runner تست آماده شد. Build ARM و تمام تست‌های خودکار پیش از Commit این مجموعه موفق بوده‌اند.

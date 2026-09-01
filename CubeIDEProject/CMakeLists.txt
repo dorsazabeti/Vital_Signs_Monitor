@@ -53,10 +53,6 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     Middlewares/ST/STM32_USB_Host_Library/Class/CDC/Src/*.c
 )
 
-# Bubble.c was generated from a 734x793 ARGB image (>2.3 MB) and is no longer
-# used by the dashboard. Excluding it avoids wasting build time and Flash.
-list(FILTER SOURCES EXCLUDE REGEX ".*/Core/Images/Bubble\\.c$")
-
 list(APPEND SOURCES ${STARTUP_FILE})
 
 add_executable(${PROJECT_NAME}.elf ${SOURCES})

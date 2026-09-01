@@ -9,6 +9,7 @@
 #define UI_CARD_STALE_COLOR    0x667788U
 #define UI_CAPTION_COLOR       0xB8D5E5U
 #define UI_BACKGROUND_COLOR    0x102A43U
+#define UI_ECG_DECIMATION      3U
 
 static lv_obj_t *heart_card;
 static lv_obj_t *temperature_card;
@@ -17,7 +18,6 @@ static lv_obj_t *heart_img;
 static lv_obj_t *heart_rate_label;
 static lv_obj_t *spo2_arrow;
 static lv_obj_t *spo2_label;
-static lv_obj_t *temperature_bar;
 static lv_obj_t *temperature_label;
 static lv_obj_t *status_label;
 static lv_obj_t *ecg_chart;
@@ -26,6 +26,7 @@ static lv_timer_t *heart_timer;
 static uint16_t heart_rate_value;
 static uint8_t heart_frame;
 static uint8_t data_available;
+static uint8_t ecg_decimation_count;
 
 static const lv_image_dsc_t *heart_frames[] = {
   &Heart1, &Heart2, &Heart3, &Heart4, &Heart5, &Heart6, &Heart7, &Heart8
@@ -188,20 +189,6 @@ void Vitals_UpdateUI(uint16_t heart_rate, uint8_t spo2,
   {
     lv_image_set_rotation(spo2_arrow, UI_GaugeAngle(spo2));
   }
-  if (temperature_bar != NULL)
-  {
-    int32_t display_temperature = temperature_tenths;
-    if (display_temperature < 320)
-    {
-      display_temperature = 320;
-    }
-    else if (display_temperature > 430)
-    {
-      display_temperature = 430;
-    }
-    lv_bar_set_value(temperature_bar, display_temperature, LV_ANIM_ON);
-  }
-
   UI_SetCardState(heart_card, heart_state);
   UI_SetCardState(spo2_card, spo2_state);
   UI_SetCardState(temperature_card, temperature_state);
@@ -277,9 +264,14 @@ void Vitals_SetDataAvailable(uint8_t available)
 
 void ECG_Update(int16_t ecg_millivolts)
 {
-  if ((ecg_chart != NULL) && (ecg_series != NULL))
+  ecg_decimation_count++;
+  if (ecg_decimation_count >= UI_ECG_DECIMATION)
   {
-    lv_chart_set_next_value(ecg_chart, ecg_series, ecg_millivolts);
+    ecg_decimation_count = 0U;
+    if ((ecg_chart != NULL) && (ecg_series != NULL))
+    {
+      lv_chart_set_next_value(ecg_chart, ecg_series, ecg_millivolts);
+    }
   }
 }
 
@@ -307,7 +299,7 @@ void UI_Dashboard_Init(lv_obj_t *screen)
   heart_img = lv_image_create(heart_card);
   lv_image_set_src(heart_img, heart_frames[0]);
   lv_image_set_scale(heart_img, 210U);
-  lv_obj_set_pos(heart_img, 25, 24);
+  lv_obj_set_pos(heart_img, 14, 24);
   heart_rate_label = UI_CreateLabel(heart_card, "-- BPM", lv_color_white());
   lv_obj_align(heart_rate_label, LV_ALIGN_BOTTOM_MID, 0, -5);
 
@@ -315,17 +307,17 @@ void UI_Dashboard_Init(lv_obj_t *screen)
   lv_obj_align(caption, LV_ALIGN_TOP_MID, 0, 5);
   image = lv_image_create(temperature_card);
   lv_image_set_src(image, &Thermometer);
-  lv_obj_set_pos(image, 12, 27);
-  temperature_bar = lv_bar_create(temperature_card);
-  lv_obj_set_size(temperature_bar, 18, 78);
-  lv_obj_set_pos(temperature_bar, 76, 34);
-  lv_bar_set_orientation(temperature_bar, LV_BAR_ORIENTATION_VERTICAL);
-  lv_bar_set_range(temperature_bar, 320, 430);
-  lv_bar_set_value(temperature_bar, 370, LV_ANIM_OFF);
-  lv_obj_set_style_bg_color(temperature_bar, lv_color_hex(0x254E68U), LV_PART_MAIN);
-  lv_obj_set_style_bg_color(temperature_bar, lv_color_hex(0xFF5A5FU), LV_PART_INDICATOR);
-  temperature_label = UI_CreateLabel(temperature_card, "--.- C", lv_color_white());
-  lv_obj_align(temperature_label, LV_ALIGN_BOTTOM_MID, 20, -5);
+  lv_obj_set_pos(image, 7, 27);
+  image = lv_image_create(temperature_card);
+  lv_image_set_src(image, &Bubble);
+  lv_obj_set_pos(image, 39, 59);
+  lv_image_set_pivot(image, 52, 30);
+  lv_image_set_rotation(image, 1800);
+  temperature_label = UI_CreateLabel(temperature_card, "--.- C",
+                                     lv_color_hex(UI_BACKGROUND_COLOR));
+  lv_obj_set_width(temperature_label, 78);
+  lv_obj_set_style_text_align(temperature_label, LV_TEXT_ALIGN_CENTER, 0);
+  lv_obj_set_pos(temperature_label, 57, 79);
 
   caption = UI_CreateLabel(spo2_card, "BLOOD OXYGEN", caption_color);
   lv_obj_align(caption, LV_ALIGN_TOP_MID, 0, 5);
@@ -359,6 +351,7 @@ void UI_Dashboard_Init(lv_obj_t *screen)
   ecg_series = lv_chart_add_series(ecg_chart, lv_color_hex(0x57E389U),
                                    LV_CHART_AXIS_PRIMARY_Y);
   lv_obj_set_style_line_width(ecg_chart, 2, LV_PART_ITEMS);
+  lv_obj_set_style_size(ecg_chart, 0, 0, LV_PART_INDICATOR);
 
   status_label = UI_CreateLabel(screen, "WAITING FOR UART", caption_color);
   lv_obj_set_width(status_label, 464);

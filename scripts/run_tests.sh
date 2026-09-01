@@ -4,7 +4,13 @@ set -eu
 repo_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$repo_dir"
 
-python3 -m unittest discover -s tests -v
+if [ -x "$repo_dir/.venv/bin/python" ]; then
+  python_cmd="$repo_dir/.venv/bin/python"
+else
+  python_cmd=${PYTHON:-python3}
+fi
+
+"$python_cmd" -m unittest discover -s tests -v
 
 cc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined \
   -I CubeIDEProject/Core/Inc \
