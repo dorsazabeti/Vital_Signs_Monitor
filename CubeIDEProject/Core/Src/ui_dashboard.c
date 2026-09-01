@@ -10,6 +10,7 @@
 #define UI_CAPTION_COLOR       0xB8D5E5U
 #define UI_BACKGROUND_COLOR    0x102A43U
 #define UI_ECG_DECIMATION      3U
+#define UI_ECG_SWEEP_GAP       3U
 
 static lv_obj_t *heart_card;
 static lv_obj_t *temperature_card;
@@ -270,7 +271,24 @@ void ECG_Update(int16_t ecg_millivolts)
     ecg_decimation_count = 0U;
     if ((ecg_chart != NULL) && (ecg_series != NULL))
     {
+      uint32_t point_count;
+      uint32_t next_point;
+      int32_t *values;
+
       lv_chart_set_next_value(ecg_chart, ecg_series, ecg_millivolts);
+      point_count = lv_chart_get_point_count(ecg_chart);
+      next_point = lv_chart_get_x_start_point(ecg_chart, ecg_series);
+      values = lv_chart_get_series_y_array(ecg_chart, ecg_series);
+
+      if ((values != NULL) && (point_count != 0U))
+      {
+        uint32_t gap;
+        for (gap = 0U; (gap < UI_ECG_SWEEP_GAP) && (gap < point_count); gap++)
+        {
+          values[(next_point + gap) % point_count] = LV_CHART_POINT_NONE;
+        }
+        lv_chart_refresh(ecg_chart);
+      }
     }
   }
 }
@@ -311,8 +329,6 @@ void UI_Dashboard_Init(lv_obj_t *screen)
   image = lv_image_create(temperature_card);
   lv_image_set_src(image, &Bubble);
   lv_obj_set_pos(image, 39, 59);
-  lv_image_set_pivot(image, 52, 30);
-  lv_image_set_rotation(image, 1800);
   temperature_label = UI_CreateLabel(temperature_card, "--.- C",
                                      lv_color_hex(UI_BACKGROUND_COLOR));
   lv_obj_set_width(temperature_label, 78);
@@ -344,7 +360,7 @@ void UI_Dashboard_Init(lv_obj_t *screen)
   lv_obj_set_style_pad_all(ecg_chart, 3, 0);
   lv_obj_set_style_line_opa(ecg_chart, LV_OPA_20, LV_PART_MAIN);
   lv_chart_set_type(ecg_chart, LV_CHART_TYPE_LINE);
-  lv_chart_set_update_mode(ecg_chart, LV_CHART_UPDATE_MODE_SHIFT);
+  lv_chart_set_update_mode(ecg_chart, LV_CHART_UPDATE_MODE_CIRCULAR);
   lv_chart_set_point_count(ecg_chart, 100U);
   lv_chart_set_div_line_count(ecg_chart, 3U, 5U);
   lv_chart_set_range(ecg_chart, LV_CHART_AXIS_PRIMARY_Y, -400, 1300);
