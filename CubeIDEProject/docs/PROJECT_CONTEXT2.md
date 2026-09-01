@@ -4,7 +4,7 @@
 
 ## 1. معرفی کوتاه پروژه
 
-هدف پروژه ساخت یک پایشگر علائم حیاتی روی برد `STM32F746G-DISCOVERY` است. داده‌های بیمار فعلاً در کامپیوتر و با Python شبیه‌سازی می‌شوند، از طریق USB Virtual COM Port و `USART1` به برد می‌رسند و روی LCD داخلی برد با LVGL نمایش داده می‌شوند. در ادامه باید تشخیص وضعیت غیرعادی، نمودار ECG و ارسال هشدار شبکه نیز به سیستم اضافه شوند.
+هدف پروژه ساخت یک پایشگر علائم حیاتی روی برد `STM32F746G-DISCOVERY` است. داده‌های بیمار فعلاً در کامپیوتر و با Python شبیه‌سازی می‌شوند، از طریق USB Virtual COM Port و `USART1` به برد می‌رسند و روی LCD داخلی برد با LVGL نمایش داده می‌شوند. نمودار ECG و زیرساخت هشدار Ethernet اکنون در کد وجود دارند؛ مرحله بعدی، اصلاح جزئیات ECG، تست یکپارچه روی برد و تأیید Link/Ping/UDP واقعی است.
 
 پارامترهای اصلی پروژه:
 
@@ -18,7 +18,7 @@
 
 - درسا ضابطی: شبیه‌ساز Python، سناریوها، تولید ECG و قرارداد داده
 - آراد ایزدی‌دوست: راه‌اندازی برد، LCD، حافظه، UART و یکپارچه‌سازی Embedded
--  فرخی: طراحی رابط گرافیکی و Assetها؛ همکاری در بخش شبکه و هشدار
+- یاسمن فرخی: طراحی رابط گرافیکی و Assetها؛ همکاری در بخش شبکه و هشدار
 
 ## 2. وضعیت فعلی در یک نگاه
 
@@ -31,12 +31,12 @@
 | داشبورد | انجام شده | سه کارت HR، Temperature و SpO2 به همراه انیمیشن قلب نمایش داده می‌شوند. |
 | Python simulator | انجام شده | پنج سناریو، ECG، Mock mode و خروجی JSON روی UART آماده است. |
 | دریافت UART در Firmware | در کد پیاده‌سازی شده | USART1، وقفه، بافر خط، parser و انتقال داده به UI وجود دارند؛ تست End-to-End نهایی روی برد باید ثبت شود. |
-| ECG روی LCD | در کد پیاده‌سازی شده | آخرین تغییرات نمودار ECG را اضافه کرده‌اند؛ تست نهایی روی برد باید ثبت شود. |
+| ECG روی LCD | در کد پیاده‌سازی شده | `lv_chart` با 300 نقطه و مسیر Parse از UART اضافه شده است؛ مقیاس Parser و چیدمان نهایی باید روی برد اصلاح/تأیید شوند. |
 | وضعیت غیرعادی و هشدار UI | انجام نشده | Threshold، رنگ هشدار و stale-data indicator باید اضافه شوند. |
 | Ethernet و Alert | پیاده‌سازی نرم‌افزاری کامل؛ نیازمند تست برد | ETH با IP ثابت، ARP، Ping، UDP، Threshold، rate limit، گیرنده Python، اعلان macOS و webhook آماده است. |
 | حسگر واقعی | خارج از فاز فعلی | پس از کامل شدن مسیر شبیه‌ساز تا نمایشگر قابل بررسی است. |
 
-نکته مهم: پیاده‌سازی فعلی از نظر کد، مسیر UART تا `Vitals_UpdateUI()` را کامل کرده است؛ اما تا زمانی که روی برد واقعی تغییر زنده اعداد مشاهده و ثبت نشود، وضعیت آن «پیاده‌سازی‌شده ولی نیازمند تأیید سخت‌افزاری» محسوب می‌شود.
+نکته مهم: پیاده‌سازی فعلی از نظر کد، مسیر UART تا `Vitals_UpdateUI()`، `ECG_Update()` و `NetworkAlert_UpdateVitals()` را کامل کرده است؛ اما تا زمانی که تغییر زنده اعداد/ECG و Link/Ping/UDP روی برد واقعی مشاهده و ثبت نشوند، این مسیرها «پیاده‌سازی‌شده ولی نیازمند تأیید سخت‌افزاری» محسوب می‌شوند.
 
 ## 3. معماری فعلی سیستم
 
@@ -55,11 +55,19 @@ UART line buffers (128 bytes)
         v
 Lightweight JSON parser
         |
-        v
-Vitals_UpdateUI()
+        +----> Vitals_UpdateUI() ----> LVGL cards
         |
-        v
-LVGL objects and timers
+        +----> ECG_Update() --------> LVGL chart
+        |
+        +----> NetworkAlert_UpdateVitals()
+                         |
+                         v
+                Threshold/debounce/rate limit
+                         |
+                         v
+                  Ethernet ARP/IPv4/UDP
+
+LVGL objects, chart and timers
         |
         |  partial RGB565 rendering
         v
@@ -105,11 +113,11 @@ Headerهای اصلی Firmware در این پوشه قرار دارند:
 
 فایل‌های کلیدی:
 
-- `main.c`: ترتیب Boot، تنظیم MPU، تست SDRAM، نمایش مراحل تشخیصی، Initialize کردن LVGL، ساخت داشبورد و تابع `Vitals_UpdateUI()`.
+- `main.c`: ترتیب Boot، تنظیم MPU، تست SDRAM، Initialize کردن LVGL، ساخت داشبورد، نمودار 300 نقطه‌ای ECG و توابع `Vitals_UpdateUI()` و `ECG_Update()`.
 - `fmc.c`: تنظیم FMC، Timing حافظه، Command sequence کامل SDRAM و Refresh rate.
 - `ltdc.c`: Timing نمایشگر، GPIOهای RGB، Pixel clock، Layer اصلی و Interrupt مربوط به LTDC.
 - `lv_port_disp.c`: اتصال LVGL به Framebuffer، دو بافر 40 خطی و تابع Flush برای کپی خروجی به SDRAM.
-- `freertos.c`: ساخت `defaultTask`، اجرای `lv_timer_handler()`، خواندن خط UART، Parse کردن JSON و به‌روزرسانی UI.
+- `freertos.c`: ساخت `defaultTask`، اجرای `lv_timer_handler()`، خواندن خط UART، Parse کردن Vitalها و ECG، به‌روزرسانی UI و اجرای دوره‌ای ماژول هشدار شبکه.
 - `network_alert.c`: درایور شبکهٔ سطح برنامه شامل Link، ARP، Ping و ارسال IPv4/UDP روی HAL ETH.
 - `network_alert_logic.c`: تشخیص وضعیت غیرعادی، debounce، rate limit، recovery و ساخت JSON هشدار.
 - `usart.c`: تنظیم USART1 و USART6، فعال‌سازی NVIC برای USART1، دریافت Interrupt-based و مدیریت دو بافر خط.
@@ -156,6 +164,12 @@ Assetها به صورت آرایه‌های C و `lv_image_dsc_t` ذخیره ش�
 - `requirements.txt`: وابستگی `pyserial>=3.5`.
 
 فایل‌های تست شبیه‌ساز در ریشه مخزن و در `../tests/test_simulation.py` قرار دارند.
+
+### 4.7.1 پوشه `../network_alert`
+
+- `receiver.py`: دریافت UDP هشدار از STM32، اعتبارسنجی Payload، حذف Sequence تکراری، Log در JSON Lines، اعلان macOS و Forward اختیاری به Webhook.
+- `__main__.py`: امکان اجرا با `python -m network_alert`.
+- تست‌های گیرنده و منطق هشدار در `../tests/test_network_alert_receiver.py` و `../tests/network_alert_logic_test.c` قرار دارند.
 
 ### 4.8 پوشه `docs`
 
@@ -240,6 +254,8 @@ Non-cacheable بودن Framebuffer باعث می‌شود LTDC همیشه داد
 - Tick یک میلی‌ثانیه‌ای LVGL از Callback مربوط به TIM6 تأمین می‌شود.
 - `lv_timer_handler()` در `defaultTask` اجرا می‌شود و Delay بین 1 تا 20 میلی‌ثانیه محدود می‌شود.
 - Stack فعلی `defaultTask` برابر 4096 است.
+- نمودار ECG با `lv_chart`، تعداد 300 نقطه و بازه Y از `-1000` تا `1000` ساخته شده است.
+- هر Sample معتبر ECG از `freertos.c` به `ECG_Update()` و سپس `lv_chart_set_next_value()` می‌رسد.
 
 ### 5.5 UART و JSON
 
@@ -254,8 +270,8 @@ Non-cacheable بودن Framebuffer باعث می‌شود LTDC همیشه داد
 - بافر Build و Ready جدا هستند تا ISR و Task روی یک رشته واحد هم‌زمان کار نکنند.
 - فریم Overlong دور ریخته می‌شود.
 - Parser فعلی سبک و بدون کتابخانه JSON است.
-- فیلدهای `scenario`, `hr`, `spo2`, `temp` Parse می‌شوند.
-- فیلد `ecg` فعلاً عمداً نادیده گرفته می‌شود.
+- فیلدهای `scenario`, `hr`, `spo2`, `temp` و `ecg` Parse می‌شوند.
+- Parser فعلی ECG فقط اولین رقم اعشار را مصرف می‌کند و سپس مقدار را در 1000 ضرب می‌کند؛ بنابراین مثلاً `0.124` به `1000` تبدیل می‌شود. این مقیاس برای نمایش دقیق موج باید اصلاح شود.
 - بازه اعتبار Firmware:
   - HR: از 30 تا 220
   - SpO2: از 50 تا 100
@@ -269,17 +285,17 @@ Non-cacheable بودن Framebuffer باعث می‌شود LTDC همیشه داد
 
 ## 6. روند Boot و حالت‌های تشخیصی فعلی
 
-Firmware فعلی برای عیب‌یابی LCD و حافظه چند مرحله دیداری دارد:
+Firmware فعلی این ترتیب را دارد:
 
-1. راه‌اندازی GPIO و LTDC.
-2. نمایش مستقیم تصویر قلب از Flash روی پس‌زمینه سرمه‌ای برای حدود 3 ثانیه؛ این مرحله مسیر Flash -> LTDC -> LCD را مستقل از SDRAM و LVGL تأیید می‌کند.
-3. راه‌اندازی FMC و SDRAM.
-4. اجرای تست Write/Read روی چند Offset و Pattern حافظه.
-5. در صورت شکست تست، نمایش رنگ بنفش و توقف دائمی.
-6. در صورت موفقیت، پر کردن Framebuffer با رنگ قرمز و نمایش آن برای حدود 2 ثانیه.
-7. راه‌اندازی LVGL، ساخت داشبورد و شروع FreeRTOS.
+1. راه‌اندازی GPIO، LTDC، FMC/SDRAM و USART1.
+2. اجرای تست Write/Read روی چند Offset و Pattern حافظه.
+3. در صورت شکست تست، نمایش رنگ بنفش و توقف دائمی.
+4. تنظیم Layer اصلی SDRAM و روشن کردن LCD/Backlight.
+5. Delay فعلی دو ثانیه‌ای پیش از LVGL.
+6. راه‌اندازی LVGL، ساخت داشبورد و نمودار ECG و شروع FreeRTOS.
+7. راه‌اندازی ماژول شبکه در `defaultTask`.
 
-این مراحل برای Bring-up بسیار مفید بودند، ولی در نسخه نمایشی نهایی باید پشت یک Compile-time debug flag قرار بگیرند تا Boot پنج ثانیه‌ای و صفحات تشخیصی حذف شوند.
+نمایش سه‌ثانیه‌ای Flash reference و پر کردن قرمز Framebuffer که در مرحله Bring-up استفاده می‌شدند، دیگر در Boot فعلی فراخوانی نمی‌شوند. Delay دو ثانیه‌ای باقی‌مانده بهتر است در نسخه نهایی حذف یا پشت Debug flag قرار گیرد.
 
 ## 7. آنچه در هفته اول انجام شد
 
@@ -327,6 +343,11 @@ Firmware فعلی برای عیب‌یابی LCD و حافظه چند مرحله
 - JSON parser سبک برای HR، SpO2، Temperature و Scenario در `freertos.c` اضافه شده است.
 - `StartDefaultTask()` داده معتبر را به `Vitals_UpdateUI()` می‌دهد.
 - متن وضعیت UI پس از دریافت، به صورت `<scenario> | LIVE UART` نمایش داده می‌شود.
+- فیلد `ecg` از JSON خوانده و به `ECG_Update()` داده می‌شود.
+- نمودار ECG با `lv_chart` و 300 نقطه به UI اضافه شده است.
+- ماژول هشدار Ethernet شامل Link polling، ARP، پاسخ Ping، IPv4/UDP و Payload هشدار اضافه شده است.
+- منطق Threshold، confirm/clear سه‌نمونه‌ای و تکرار هشدار 30 ثانیه‌ای اضافه شده است.
+- گیرنده Python برای UDP، Log، اعلان macOS و Webhook اضافه شده و تست‌های نرم‌افزاری آن موجود است.
 
 ## 10. مشکلات قبلی LCD و علت آن‌ها
 
@@ -371,15 +392,15 @@ Firmware فعلی برای عیب‌یابی LCD و حافظه چند مرحله
 
 ## 12. روش Build و تولید خروجی
 
-از داخل `CubeIDEProject`:
+از داخل `CubeIDEProject`، روش پیشنهادی و کم‌خطر این است که Source و Build directory صریح نوشته شوند. این روش در صورت نبود پوشه `build/` آن را خودکار ایجاد می‌کند و به `rm -rf *` نیاز ندارد:
 
 ```bash
-cd build
-rm -rf -- ./*
-cmake .. -DCMAKE_TOOLCHAIN_FILE=../arm-none-eabi.cmake
-make -j4
-cd ..
+cd "/Users/arad/Documents/Uni/Tasks/Az iot/Vital_Signs_Monitor/CubeIDEProject"
+cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE="$PWD/arm-none-eabi.cmake"
+cmake --build build -j4
 ```
+
+فرمان `rm -rf *` فقط وقتی ایمن است که ابتدا با `pwd` قطعی شده باشد داخل پوشه `CubeIDEProject/build` هستیم. برای Build روزمره اصلاً لازم نیست اجرا شود.
 
 `CMakeLists.txt` فعلی پس از Build موفق، `VitalSignsMonitor.hex` و `VitalSignsMonitor.bin` را به صورت خودکار می‌سازد. اگر تولید دستی لازم بود:
 
@@ -497,7 +518,7 @@ python3 -m unittest discover -s tests -v
 3. تغییر رنگ Card یا Border بر اساس وضعیت هر Vital.
 4. متحرک کردن عقربه SpO2 بر اساس مقدار واقعی.
 5. بهتر کردن نمایش دما و واحدها.
-6. آماده کردن یک فضای مشخص برای نمودار ECG هفته بعد.
+6. هماهنگ کردن نمودار ECG موجود با داشبورد، جلوگیری از پوشاندن کارت‌ها و نهایی کردن رنگ/محورها.
 7. تهیه Screenshot/عکس واقعی برای گزارش هفته سوم.
 
 معیار تحویل:
@@ -542,8 +563,8 @@ python3 -m unittest discover -s tests -v
 
 اولویت بالا:
 
-- رسم نمودار زنده ECG با `lv_chart` یا Canvas.
-- طراحی Buffer مناسب ECG جدا از Update نرخ پایین‌تر اعداد.
+- اصلاح مقیاس `Json_ParseECG()` و حفظ دقت اعشاری داده شبیه‌ساز.
+- اصلاح چیدمان نمودار موجود و طراحی Buffer/rate مناسب ECG جدا از Update نرخ پایین‌تر اعداد.
 - تشخیص Threshold روی Firmware یا تعریف روشن محل تصمیم‌گیری.
 - فعال‌سازی تدریجی Peripheralهای لازم با خارج شدن از `LCD_BRINGUP_MODE=1`.
 - تست فیزیکی Link/Ping/UDP پیاده‌سازی Ethernet روی برد و ثبت Log نتیجه.
@@ -575,6 +596,8 @@ python3 -m unittest discover -s tests -v
 - خطای برگشتی `HAL_UART_Receive_IT()` در Callback فعلی فقط cast به void شده و شمارش/Recovery ندارد.
 - هنوز Timeout داده، Frame counter و نشانه خطای ارتباط در UI وجود ندارد.
 - UI فعلی با هر فریم معتبر Labelها را Update می‌کند؛ برای 50Hz بهتر است نرخ UI عددی از نرخ ECG جدا شود.
+- `Json_ParseECG()` فعلی فقط یک رقم اعشار را می‌خواند و Scale دقیقی ندارد؛ این مورد قبل از ادعای صحت عددی ECG باید اصلاح شود.
+- نمودار ECG با اندازه `460x220` در مرکز صفحه و پس از کارت‌ها ساخته می‌شود؛ چون Background آن Opaque است ممکن است بخش بزرگی از داشبورد را بپوشاند و باید روی LCD بررسی شود.
 - Network stack موردنیاز Demo پیاده‌سازی و تست نرم‌افزاری شده، اما Link/Ping/UDP هنوز باید روی برد واقعی تأیید شود.
 - Build با `GLOB_RECURSE` بخش بزرگی از سورس‌های Library را وارد می‌کند؛ فعلاً کار می‌کند ولی زمان Build و حجم پروژه بالاست.
 - پوشه‌های `Backup` و سورس کامل LVGL حجم Zip و مخزن را زیاد می‌کنند؛ حذف یا تغییر آن‌ها فقط پس از هماهنگی تیم انجام شود.
@@ -629,16 +652,52 @@ python3 -m unittest discover -s tests -v
 - فایل‌های `build/`, `.venv/`, `.metadata/`, `__pycache__/` و `.DS_Store` Commit نشوند.
 - پس از هر پیام یا تغییر مهم، حداقل بخش‌های «وضعیت فعلی»، «کارهای انجام‌شده»، «کارهای باقی‌مانده» و «چک‌لیست تست» بررسی و در صورت نیاز به‌روزرسانی شوند.
 
-## 19. وضعیت Git هنگام ایجاد این سند
+## 19. وضعیت فعلی Git و رخداد Build در 2026-09-01
 
-Commit پایه هنگام شروع کار شبکه:
+Commit فعلی و همگام با Remote:
 
 ```text
-f69568c Ecg start
+48a7cb6 shabake
 ```
 
-وضعیت مخزن پیش از شروع این مرحله تمیز و با `origin/main` همگام بود. در کار شبکه، `main.c` عمداً تغییر نکرده است تا با کار هم‌زمان عضو دیگر تیم Conflict ایجاد نشود. فایل‌های تغییرکرده و جدید این مرحله با `git status` قابل مشاهده‌اند و هنوز Commit نشده‌اند.
+Commitهای مهم اخیر:
+
+```text
+48a7cb6 shabake
+45f68de Thermometer and ecg
+f69568c Ecg start
+ef73750 feat: add LVGL vital-sign dashboard and UART simulation support
+```
+
+در رخداد Build، فرمان `rm -rf *` از پوشه اشتباه اجرا شد. Pull دوباره تمام فایل‌های Track‌شده را بازگرداند. پوشه `build/` برنگشت چون خروجی تولیدی و Git-ignored است و باید با CMake دوباره ساخته شود. سپس اجرای ناقص `cmake -DCMAKE_TOOLCHAIN_FILE=../arm-none-eabi.cmake` در ریشه `CubeIDEProject` باعث ایجاد دو خروجی محلی و Track‌نشده شد:
+
+```text
+CubeIDEProject/CMakeCache.txt
+CubeIDEProject/CMakeFiles/
+```
+
+در زمان این بررسی، `git status` هیچ حذف یا تغییر Track‌شده‌ای نشان نمی‌داد و فقط همین دو خروجی CMake را به صورت Untracked گزارش می‌کرد. فایل `docs/PROJECT_CONTEXT.md` نیز Track‌شده و سالم بود. برای جلوگیری از تکرار، Build باید با روش `cmake -S . -B build ...` بخش 12 اجرا شود.
+
+### خطای Flash overflow پس از بازیابی پروژه
+
+Build جدید Configure و Compile را تا 100 درصد کامل کرد، اما Link با پیام زیر شکست خورد:
+
+```text
+section `.rodata' will not fit in region `FLASH'
+region `FLASH' overflowed by 2301300 bytes
+```
+
+بررسی Objectها علت دقیق را مشخص کرد:
+
+- Flash تعریف‌شده در Linker script همچنان 1024KB است و تغییرات شبکه ظرفیت Flash را کم نکرده‌اند.
+- `Core/Images/Bubble.c` به تنهایی `2,328,276` بایت `.rodata` تولید می‌کند.
+- Descriptor فعلی Bubble برابر `734x793` با `ARGB8888` و `data_size = 2,328,248` بایت است.
+- نسخه قبلی و قابل Build همین Asset برابر `105x61` و `data_size = 25,620` بایت بود.
+- افزایش این فایل برابر حدود `2,302,628` بایت است و تقریباً دقیقاً با Overflow گزارش‌شده تطابق دارد.
+- تغییر بزرگ Bubble در Commit `45f68de Thermometer and ecg` وارد شده است؛ Commit شبکه `48a7cb6` علت اصلی Overflow نیست.
+
+راه‌حل موردنیاز این است که Bubble واقعاً به ابعاد موردنیاز UI Resize و دوباره با LVGL Image Converter تولید شود، یا موقتاً فقط `Core/Images/Bubble.c` به نسخه پیش از Commit `45f68de` برگردد. صرفاً تغییر دستی Width/Height یا `data_size` بدون جایگزینی آرایه تصویر صحیح نیست. پس از اصلاح Bubble، Build احتمالاً تنها حدود 1.3KB فضای آزاد در حالت بدون Optimization خواهد داشت؛ بنابراین Build نهایی با `-DCMAKE_BUILD_TYPE=MinSizeRel` و بررسی خروجی `arm-none-eabi-size` توصیه می‌شود.
 
 ---
 
-آخرین جمع‌بندی: زیرساخت نمایشگر، UART، ECG و داشبورد در کد موجود است. مسیر شبکه و هشدار شامل IP ثابت، ARP، Ping، UDP، منطق Threshold، گیرنده Python، اعلان و webhook نیز بدون تغییر `main.c` پیاده‌سازی و با تست خودکار بررسی شده است. Milestone بعدی، Flash و تأیید Link/Ping/UDP روی برد واقعی، تکمیل حالت‌های هشدار UI و ثبت عکس و Log دموی نهایی است.
+آخرین جمع‌بندی: فایل‌های Track‌شده پس از Pull سالم هستند. مشکل مسیر CMake رفع شده و Build تا مرحله Link جلو می‌رود؛ مانع فعلی، Asset بسیار بزرگ `Bubble.c` است که حدود 2.33MB Flash می‌خواهد. زیرساخت نمایشگر، UART، نمودار ECG، داشبورد و شبکه در کد موجود است و Commit شبکه علت این Overflow نیست. Milestone بعدی، بازتولید Bubble در اندازه مناسب، Build با `MinSizeRel`، بررسی اندازه نهایی، Flash و تأیید ECG و Link/Ping/UDP روی برد واقعی است.
