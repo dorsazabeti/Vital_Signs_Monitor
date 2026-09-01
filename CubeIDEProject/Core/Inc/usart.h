@@ -37,6 +37,7 @@ extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart6;
 
 /* USER CODE BEGIN Private defines */
+#define UART_RX_BUFFER_SIZE 128U
 
 /* USER CODE END Private defines */
 
@@ -44,16 +45,13 @@ void MX_USART1_UART_Init(void);
 void MX_USART6_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+uint8_t UART_ReadLine(char *destination, uint16_t destination_size);
 
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
 }
 #endif
-
-extern uint8_t uart_rx_byte;
-extern char uart_rx_line[128];
-extern volatile uint8_t uart_line_ready;
 
 #endif /* __USART_H__ */
 

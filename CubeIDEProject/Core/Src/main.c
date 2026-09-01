@@ -71,6 +71,8 @@ static lv_obj_t *heart_rate_label;
 static lv_obj_t *spo2_label;
 static lv_obj_t *temperature_label;
 static lv_obj_t *scenario_label;
+static lv_obj_t *ecg_chart;
+static lv_chart_series_t *ecg_series;
 static uint8_t heart_frame = 0;
 static const lv_image_dsc_t *heart_frames[] = {&Heart1, &Heart2, &Heart3, &Heart4, &Heart5, &Heart6, &Heart7, &Heart8};
 static volatile uint8_t lvgl_initialized = 0U;
@@ -87,6 +89,7 @@ static void Heart_Timer_Callback(lv_timer_t *timer);
 static lv_obj_t *Vitals_CreateCard(lv_obj_t *parent, int32_t x);
 static lv_obj_t *Vitals_CreateLabel(lv_obj_t *parent, const char *text, lv_color_t color);
 static void Vitals_CreateDashboard(lv_obj_t *screen);
+void ECG_Update(int16_t ecg);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -170,34 +173,6 @@ static void LCD_ShowSDRAMError(void)
   }
 }
 
-static void LCD_ShowFlashReference(void)
-{
-  LTDC_LayerCfgTypeDef layer = {0};
-
-  layer.WindowX0 = 180U;
-  layer.WindowX1 = 300U;
-  layer.WindowY0 = 82U;
-  layer.WindowY1 = 189U;
-  layer.PixelFormat = LTDC_PIXEL_FORMAT_ARGB8888;
-  layer.Alpha = 255U;
-  layer.Alpha0 = 0U;
-  layer.BlendingFactor1 = LTDC_BLENDING_FACTOR1_PAxCA;
-  layer.BlendingFactor2 = LTDC_BLENDING_FACTOR2_PAxCA;
-  layer.FBStartAdress = (uint32_t)Heart1.data;
-  layer.ImageWidth = 120U;
-  layer.ImageHeight = 107U;
-
-  WRITE_REG(hltdc.Instance->BCCR, 0x00102A43U);
-
-  if (HAL_LTDC_ConfigLayer(&hltdc, &layer, 0U) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  HAL_GPIO_WritePin(LCD_DISP_GPIO_Port, LCD_DISP_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(LCD_BL_CTRL_GPIO_Port, LCD_BL_CTRL_Pin, GPIO_PIN_SET);
-}
-
 static void LCD_ConfigureSDRAMLayer(void)
 {
   LTDC_LayerCfgTypeDef layer = {0};
@@ -219,6 +194,20 @@ static void LCD_ConfigureSDRAMLayer(void)
   {
     Error_Handler();
   }
+}
+
+void ECG_Update(int16_t ecg)
+{
+    if(ecg_series == NULL)
+    {
+        return;
+    }
+
+    lv_chart_set_next_value(
+        ecg_chart,
+        ecg_series,
+        ecg
+    );
 }
 
 static void Heart_Timer_Callback(lv_timer_t *timer) {  // TODO: change based on heart rate
@@ -268,7 +257,7 @@ void Vitals_UpdateUI(uint16_t heart_rate, uint8_t spo2, int16_t temperature_tent
   lv_label_set_text_fmt(temperature_label, "%d.%d C",
                         (int)(temperature_tenths / 10),
                         (int)(temperature_tenths % 10));
-  lv_label_set_text_fmt(scenario_label, "%s | SIMULATION READY", scenario);
+  lv_label_set_text_fmt(scenario_label, "%s | LIVE UART", scenario);
 }
 
 static void Vitals_CreateDashboard(lv_obj_t *screen)
@@ -327,7 +316,47 @@ static void Vitals_CreateDashboard(lv_obj_t *screen)
   scenario_label = Vitals_CreateLabel(screen, "STARTING SIMULATION", caption_color);
   lv_obj_align(scenario_label, LV_ALIGN_BOTTOM_MID, 0, -7);
 
+  ecg_chart = lv_chart_create(screen);
+
+  lv_obj_set_style_bg_color(
+      ecg_chart,
+      lv_color_hex(0x102A43),
+      0
+  );
+
+  lv_obj_set_style_bg_opa(
+      ecg_chart,
+      LV_OPA_COVER,
+      0
+  );
+
+  lv_obj_set_size(ecg_chart, 460,220);
+  lv_obj_align(ecg_chart, LV_ALIGN_CENTER,0,0);
+
+  lv_chart_set_type(ecg_chart, LV_CHART_TYPE_LINE);
+
+  lv_chart_set_point_count(ecg_chart, 300);
+
+  lv_chart_set_range(
+      ecg_chart,
+      LV_CHART_AXIS_PRIMARY_Y,
+      -1000,
+      1000
+  );
+
+  ecg_series = lv_chart_add_series(
+      ecg_chart,
+      lv_color_hex(0xFFFFFF),
+      LV_CHART_AXIS_PRIMARY_Y
+  );
+  lv_obj_set_style_line_width(
+      ecg_chart,
+      1,
+      LV_PART_ITEMS
+  );
+
   Vitals_UpdateUI(76U, 98U, 370, "Normal");
+  lv_label_set_text(scenario_label, "Normal | WAITING FOR UART");
   lv_timer_create(Heart_Timer_Callback, 90, NULL);
 }
 /* USER CODE END 0 */
@@ -369,9 +398,8 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_LTDC_Init();
-  LCD_ShowFlashReference();
-  HAL_Delay(3000U);
   MX_FMC_Init();
+  MX_USART1_UART_Init();
 #if !LCD_BRINGUP_MODE
   MX_ADC3_Init();
   MX_CRC_Init();
@@ -392,21 +420,13 @@ int main(void)
   MX_TIM5_Init();
   MX_TIM8_Init();
   MX_TIM12_Init();
-  MX_USART1_UART_Init();
   MX_USART6_UART_Init();
   MX_FATFS_Init();
 #endif
   /* USER CODE BEGIN 2 */
-  uint16_t *frame_buffer = (uint16_t *)LCD_FRAME_BUFFER_ADDRESS;
-
   if (SDRAM_Test() == 0U)
   {
     LCD_ShowSDRAMError();
-  }
-
-  for (uint32_t pixel = 0; pixel < (LCD_WIDTH * LCD_HEIGHT); pixel++)
-  {
-    frame_buffer[pixel] = 0xF800U;
   }
 
   __DSB();

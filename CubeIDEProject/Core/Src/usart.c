@@ -19,19 +19,19 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "usart.h"
-#define UART_RX_BUFFER_SIZE 128
 
 /* USER CODE BEGIN 0 */
+#include <string.h>
 
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart1;
-#define UART_RX_BUFFER_SIZE 128
-
-uint8_t uart_rx_byte;
-char uart_rx_line[UART_RX_BUFFER_SIZE];
-uint16_t uart_rx_index = 0;
-volatile uint8_t uart_line_ready = 0;
+static uint8_t uart_rx_byte;
+static char uart_rx_build_line[UART_RX_BUFFER_SIZE];
+static char uart_rx_ready_line[UART_RX_BUFFER_SIZE];
+static volatile uint16_t uart_rx_index = 0U;
+static volatile uint8_t uart_line_ready = 0U;
+static volatile uint8_t uart_rx_overflow = 0U;
 UART_HandleTypeDef huart6;
 
 /* USART1 init function */
@@ -60,8 +60,11 @@ void MX_USART1_UART_Init(void)
   {
     Error_Handler();
   }
-  HAL_UART_Receive_IT(&huart1, &uart_rx_byte, 1);
   /* USER CODE BEGIN USART1_Init 2 */
+  if (HAL_UART_Receive_IT(&huart1, &uart_rx_byte, 1U) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
   /* USER CODE END USART1_Init 2 */
 
@@ -141,6 +144,9 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
     HAL_GPIO_Init(VCP_TX_GPIO_Port, &GPIO_InitStruct);
 
+    HAL_NVIC_SetPriority(USART1_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(USART1_IRQn);
+
   /* USER CODE BEGIN USART1_MspInit 1 */
 
   /* USER CODE END USART1_MspInit 1 */
@@ -201,6 +207,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
     HAL_GPIO_DeInit(VCP_TX_GPIO_Port, VCP_TX_Pin);
 
   /* USER CODE BEGIN USART1_MspDeInit 1 */
+    HAL_NVIC_DisableIRQ(USART1_IRQn);
 
   /* USER CODE END USART1_MspDeInit 1 */
   }
@@ -226,32 +233,77 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 
 /* USER CODE BEGIN 1 */
 
-/* USER CODE END 1 */
+uint8_t UART_ReadLine(char *destination, uint16_t destination_size)
+{
+  uint8_t line_available = 0U;
+  uint32_t interrupt_state;
+
+  if ((destination == NULL) || (destination_size == 0U))
+  {
+    return 0U;
+  }
+
+  interrupt_state = __get_PRIMASK();
+  __disable_irq();
+
+  if (uart_line_ready != 0U)
+  {
+    size_t length = strlen(uart_rx_ready_line);
+
+    if (length >= destination_size)
+    {
+      length = destination_size - 1U;
+    }
+
+    memcpy(destination, uart_rx_ready_line, length);
+    destination[length] = '\0';
+    uart_line_ready = 0U;
+    line_available = 1U;
+  }
+
+  if (interrupt_state == 0U)
+  {
+    __enable_irq();
+  }
+
+  return line_available;
+}
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-    if(huart->Instance == USART1)
+  if (huart->Instance == USART1)
+  {
+    if (uart_rx_byte == '\n')
     {
-        if(uart_rx_byte == '\n')
+      if ((uart_rx_overflow == 0U) && (uart_rx_index > 0U) &&
+          (uart_line_ready == 0U))
+      {
+        uart_rx_build_line[uart_rx_index] = '\0';
+        memcpy(uart_rx_ready_line, uart_rx_build_line, uart_rx_index + 1U);
+        uart_line_ready = 1U;
+      }
+
+      uart_rx_index = 0U;
+      uart_rx_overflow = 0U;
+    }
+    else if (uart_rx_byte != '\r')
+    {
+      if (uart_rx_overflow == 0U)
+      {
+        if (uart_rx_index < (UART_RX_BUFFER_SIZE - 1U))
         {
-            uart_rx_line[uart_rx_index] = '\0';
-            uart_line_ready = 1;
-            uart_rx_index = 0;
+          uart_rx_build_line[uart_rx_index] = (char)uart_rx_byte;
+          uart_rx_index++;
         }
         else
         {
-            if(uart_rx_index < UART_RX_BUFFER_SIZE - 1)
-            {
-                uart_rx_line[uart_rx_index++] = uart_rx_byte;
-            }
-            HAL_UART_Transmit(
-                &huart1,
-                (uint8_t *)"RX\n",
-                3,
-                100
-            );
+          uart_rx_overflow = 1U;
         }
-
-        HAL_UART_Receive_IT(&huart1, &uart_rx_byte, 1);
+      }
     }
+
+    (void)HAL_UART_Receive_IT(&huart1, &uart_rx_byte, 1U);
+  }
 }
+
+/* USER CODE END 1 */
