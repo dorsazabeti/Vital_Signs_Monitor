@@ -53,7 +53,6 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-void Vitals_UpdateUI(uint16_t heart_rate, uint8_t spo2, int16_t temperature_tenths, const char *scenario);
 
 /* USER CODE END EFP */
 

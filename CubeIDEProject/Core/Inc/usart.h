@@ -38,6 +38,16 @@ extern UART_HandleTypeDef huart6;
 
 /* USER CODE BEGIN Private defines */
 #define UART_RX_BUFFER_SIZE 128U
+#define UART_RX_QUEUE_DEPTH 8U
+
+typedef struct
+{
+  uint32_t received_lines;
+  uint32_t dropped_lines;
+  uint32_t overflow_lines;
+  uint32_t hardware_errors;
+  uint32_t rearm_failures;
+} UART_RxStats;
 
 /* USER CODE END Private defines */
 
@@ -46,6 +56,8 @@ void MX_USART6_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 uint8_t UART_ReadLine(char *destination, uint16_t destination_size);
+void UART_Service(void);
+UART_RxStats UART_GetRxStats(void);
 
 /* USER CODE END Prototypes */
 

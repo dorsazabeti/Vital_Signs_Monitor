@@ -67,7 +67,10 @@ class VitalSimulator:
             print(f"[*] Connected to {self.transport.port} @ {self.transport.baudrate} baud")
         else:
             if self.transport.port:
-                print(f"[!] Could not open {self.transport.port}; running in MOCK mode.")
+                print(
+                    f"[!] Could not open {self.transport.port}; running in MOCK mode "
+                    "and retrying automatically."
+                )
             else:
                 print("[*] No UART port selected; running in MOCK mode.")
 

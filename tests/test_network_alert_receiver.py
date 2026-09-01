@@ -51,6 +51,10 @@ class AlertReceiverTests(unittest.TestCase):
         with self.assertRaises(AlertValidationError):
             parse_alert(payload(spo2=101))
 
+    def test_unsafe_scenario_is_rejected(self):
+        with self.assertRaises(AlertValidationError):
+            parse_alert(payload(scenario='bad"\nscenario'))
+
     def test_duplicate_sequence_is_ignored_per_sender(self):
         deduplicator = SequenceDeduplicator()
         first = parse_alert(payload(sequence=7, uptime_ms=5000))

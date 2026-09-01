@@ -38,13 +38,12 @@
 #include "usb_host.h"
 #include "gpio.h"
 #include "fmc.h"
-#include "images.h"
-#include "usart.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "lvgl.h"
 #include "lv_port_disp.h"
+#include "ui_dashboard.h"
 
 /* USER CODE END Includes */
 
@@ -66,15 +65,6 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-static lv_obj_t *heart_img;
-static lv_obj_t *heart_rate_label;
-static lv_obj_t *spo2_label;
-static lv_obj_t *temperature_label;
-static lv_obj_t *scenario_label;
-static lv_obj_t *ecg_chart;
-static lv_chart_series_t *ecg_series;
-static uint8_t heart_frame = 0;
-static const lv_image_dsc_t *heart_frames[] = {&Heart1, &Heart2, &Heart3, &Heart4, &Heart5, &Heart6, &Heart7, &Heart8};
 static volatile uint8_t lvgl_initialized = 0U;
 /* USER CODE END PV */
 
@@ -85,11 +75,6 @@ static void MPU_Config(void);
 void MX_FREERTOS_Init(void);
 
 /* USER CODE BEGIN PFP */
-static void Heart_Timer_Callback(lv_timer_t *timer); 
-static lv_obj_t *Vitals_CreateCard(lv_obj_t *parent, int32_t x);
-static lv_obj_t *Vitals_CreateLabel(lv_obj_t *parent, const char *text, lv_color_t color);
-static void Vitals_CreateDashboard(lv_obj_t *screen);
-void ECG_Update(int16_t ecg);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -196,169 +181,6 @@ static void LCD_ConfigureSDRAMLayer(void)
   }
 }
 
-void ECG_Update(int16_t ecg)
-{
-    if(ecg_series == NULL)
-    {
-        return;
-    }
-
-    lv_chart_set_next_value(
-        ecg_chart,
-        ecg_series,
-        ecg
-    );
-}
-
-static void Heart_Timer_Callback(lv_timer_t *timer) {  // TODO: change based on heart rate
-  lv_image_set_src(heart_img, heart_frames[heart_frame]);
-  if (heart_frame == 7) {
-    heart_frame = 0;
-    lv_timer_set_period(timer, 180);
-  } else {
-    heart_frame++;
-    lv_timer_set_period(timer, 90);
-  }
-}
-
-static lv_obj_t *Vitals_CreateCard(lv_obj_t *parent, int32_t x)
-{
-  lv_obj_t *card = lv_obj_create(parent);
-  lv_obj_set_size(card, 148, 196);
-  lv_obj_set_pos(card, x, 38);
-  lv_obj_set_scrollable(card, false);
-  lv_obj_set_style_bg_color(card, lv_color_hex(0x173D5BU), 0);
-  lv_obj_set_style_bg_opa(card, LV_OPA_COVER, 0);
-  lv_obj_set_style_border_color(card, lv_color_hex(0x2A6687U), 0);
-  lv_obj_set_style_border_width(card, 1, 0);
-  lv_obj_set_style_radius(card, 12, 0);
-  lv_obj_set_style_pad_all(card, 0, 0);
-  return card;
-}
-
-static lv_obj_t *Vitals_CreateLabel(lv_obj_t *parent, const char *text, lv_color_t color)
-{
-  lv_obj_t *label = lv_label_create(parent);
-  lv_label_set_text(label, text);
-  lv_obj_set_style_text_color(label, color, 0);
-  return label;
-}
-
-void Vitals_UpdateUI(uint16_t heart_rate, uint8_t spo2, int16_t temperature_tenths, const char *scenario)
-{
-  if ((heart_rate_label == NULL) || (spo2_label == NULL) ||
-      (temperature_label == NULL) || (scenario_label == NULL))
-  {
-    return;
-  }
-
-  lv_label_set_text_fmt(heart_rate_label, "%u BPM", (unsigned int)heart_rate);
-  lv_label_set_text_fmt(spo2_label, "%u %%", (unsigned int)spo2);
-  lv_label_set_text_fmt(temperature_label, "%d.%d C",
-                        (int)(temperature_tenths / 10),
-                        (int)(temperature_tenths % 10));
-  lv_label_set_text_fmt(scenario_label, "%s | LIVE UART", scenario);
-}
-
-static void Vitals_CreateDashboard(lv_obj_t *screen)
-{
-  const lv_color_t caption_color = lv_color_hex(0xB8D5E5U);
-  lv_obj_t *heart_card = Vitals_CreateCard(screen, 8);
-  lv_obj_t *temperature_card = Vitals_CreateCard(screen, 166);
-  lv_obj_t *spo2_card = Vitals_CreateCard(screen, 324);
-  lv_obj_t *title;
-  lv_obj_t *caption;
-  lv_obj_t *image;
-
-  title = Vitals_CreateLabel(screen, "VITAL SIGNS MONITOR", lv_color_white());
-  lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 10);
-
-  caption = Vitals_CreateLabel(heart_card, "HEART RATE", caption_color);
-  lv_obj_align(caption, LV_ALIGN_TOP_MID, 0, 8);
-
-  heart_img = lv_image_create(heart_card);
-  lv_image_set_src(heart_img, heart_frames[0]);
-  lv_obj_set_pos(heart_img, 13, 32);
-
-  heart_rate_label = Vitals_CreateLabel(heart_card, "-- BPM", lv_color_white());
-  lv_obj_align(heart_rate_label, LV_ALIGN_BOTTOM_MID, 0, -12);
-
-  caption = Vitals_CreateLabel(temperature_card, "TEMPERATURE", caption_color);
-  lv_obj_align(caption, LV_ALIGN_TOP_MID, 0, 8);
-
-  image = lv_image_create(temperature_card);
-  lv_image_set_src(image, &Thermometer);
-  lv_obj_set_pos(image, 7, 42);
-
-  image = lv_image_create(temperature_card);
-  lv_image_set_src(image, &Bubble);
-  lv_obj_set_pos(image, 39, 59);
-
-  temperature_label = Vitals_CreateLabel(temperature_card, "--.- C", lv_color_hex(0x102A43U));
-  lv_obj_set_width(temperature_label, 78);
-  lv_obj_set_style_text_align(temperature_label, LV_TEXT_ALIGN_CENTER, 0);
-  lv_obj_set_pos(temperature_label, 57, 79);
-
-  caption = Vitals_CreateLabel(spo2_card, "BLOOD OXYGEN", caption_color);
-  lv_obj_align(caption, LV_ALIGN_TOP_MID, 0, 8);
-
-  image = lv_image_create(spo2_card);
-  lv_image_set_src(image, &Gauge);
-  lv_obj_set_pos(image, 32, 42);
-
-  image = lv_image_create(spo2_card);
-  lv_image_set_src(image, &GaugeArrow);
-  lv_obj_set_pos(image, 32, 42);
-
-  spo2_label = Vitals_CreateLabel(spo2_card, "-- %", lv_color_white());
-  lv_obj_align(spo2_label, LV_ALIGN_BOTTOM_MID, 0, -12);
-
-  scenario_label = Vitals_CreateLabel(screen, "STARTING SIMULATION", caption_color);
-  lv_obj_align(scenario_label, LV_ALIGN_BOTTOM_MID, 0, -7);
-
-  ecg_chart = lv_chart_create(screen);
-
-  lv_obj_set_style_bg_color(
-      ecg_chart,
-      lv_color_hex(0x102A43),
-      0
-  );
-
-  lv_obj_set_style_bg_opa(
-      ecg_chart,
-      LV_OPA_COVER,
-      0
-  );
-
-  lv_obj_set_size(ecg_chart, 460,220);
-  lv_obj_align(ecg_chart, LV_ALIGN_CENTER,0,0);
-
-  lv_chart_set_type(ecg_chart, LV_CHART_TYPE_LINE);
-
-  lv_chart_set_point_count(ecg_chart, 300);
-
-  lv_chart_set_range(
-      ecg_chart,
-      LV_CHART_AXIS_PRIMARY_Y,
-      -1000,
-      1000
-  );
-
-  ecg_series = lv_chart_add_series(
-      ecg_chart,
-      lv_color_hex(0xFFFFFF),
-      LV_CHART_AXIS_PRIMARY_Y
-  );
-  lv_obj_set_style_line_width(
-      ecg_chart,
-      1,
-      LV_PART_ITEMS
-  );
-
-  Vitals_UpdateUI(76U, 98U, 370, "Normal");
-  lv_label_set_text(scenario_label, "Normal | WAITING FOR UART");
-  lv_timer_create(Heart_Timer_Callback, 90, NULL);
-}
 /* USER CODE END 0 */
 
 /**
@@ -433,7 +255,7 @@ int main(void)
   LCD_ConfigureSDRAMLayer();
   HAL_GPIO_WritePin(LCD_DISP_GPIO_Port, LCD_DISP_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(LCD_BL_CTRL_GPIO_Port, LCD_BL_CTRL_Pin, GPIO_PIN_SET);
-  HAL_Delay(2000U);
+  HAL_Delay(100U);
 
   lv_init();
   lvgl_initialized = 1U;
@@ -444,12 +266,7 @@ int main(void)
   lv_obj_set_style_bg_color(screen, lv_color_hex(0x102A43U), 0);
   lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, 0);
 
-  Vitals_CreateDashboard(screen);
-
-  lv_obj_invalidate(screen);
-  lv_refr_now(NULL);
-  HAL_GPIO_WritePin(LCD_DISP_GPIO_Port, LCD_DISP_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(LCD_BL_CTRL_GPIO_Port, LCD_BL_CTRL_Pin, GPIO_PIN_SET);
+  UI_Dashboard_Init(screen);
 
   lv_obj_invalidate(screen);
   lv_refr_now(NULL);
