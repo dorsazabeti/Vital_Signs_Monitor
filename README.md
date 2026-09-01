@@ -72,6 +72,25 @@ terminated by `\n`:
 Field types, framing rules, error handling, and STM32 receiver requirements are
 specified in [UART_PROTOCOL.md](UART_PROTOCOL.md).
 
+## Ethernet alerts
+
+The STM32 firmware now includes a small static-IP Ethernet alert path (ARP,
+IPv4, UDP, and ping reply) that does not require LwIP. Abnormal values are
+debounced and rate-limited before the board sends a validated JSON alert to the
+computer. The receiver can log alerts, show macOS desktop notifications, and
+optionally forward them to an HTTP webhook.
+
+Default direct-cable addresses are `192.168.7.1` for the computer and
+`192.168.7.2` for the board. Start the receiver with:
+
+```bash
+python3 -m network_alert --log alerts.jsonl
+```
+
+Configuration, payload fields, cable setup, and the hardware test checklist are
+documented in
+[CubeIDEProject/docs/NETWORK_ALERT.md](CubeIDEProject/docs/NETWORK_ALERT.md).
+
 ## Tests
 
 Tests use Python's standard library and do not require a board:
@@ -80,8 +99,8 @@ Tests use Python's standard library and do not require a board:
 python3 -m unittest discover -s tests -v
 ```
 
-Hardware UART reception, STM32 JSON parsing, GUI updates, and Ethernet alerts
-must still be verified as part of end-to-end integration.
+Hardware UART reception, STM32 JSON parsing, GUI updates, and the final
+Ethernet Link/Ping/UDP path must still be verified on the physical board.
 
 ## Team ownership from the proposal
 

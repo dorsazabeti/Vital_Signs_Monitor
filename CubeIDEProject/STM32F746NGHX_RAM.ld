@@ -44,7 +44,8 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Memories definition */
 MEMORY
 {
-  RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 320K
+  RAM       (xrw) : ORIGIN = 0x20000000,   LENGTH = 304K
+  ETHRAM    (xrw) : ORIGIN = 0x2004C000,   LENGTH = 16K
   FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 1024K
 }
 
@@ -135,6 +136,32 @@ SECTIONS
 
   /* Used by the startup to initialize data */
   _sidata = LOADADDR(.data);
+
+  /* Ethernet DMA descriptors and buffers must live in DMA-accessible SRAM2. */
+  .eth_rx_desc 0x2004C000 (NOLOAD) :
+  {
+    . = ALIGN(32);
+    KEEP(*(.RxDecripSection))
+  } >ETHRAM
+
+  .eth_tx_desc 0x2004C0A0 (NOLOAD) :
+  {
+    . = ALIGN(32);
+    KEEP(*(.TxDecripSection))
+  } >ETHRAM
+
+  .eth_rx_buffers 0x2004C200 (NOLOAD) :
+  {
+    . = ALIGN(32);
+    KEEP(*(.EthRxBufferSection))
+  } >ETHRAM
+
+  .eth_tx_buffers (NOLOAD) :
+  {
+    . = ALIGN(32);
+    KEEP(*(.EthTxBufferSection))
+    . = ALIGN(32);
+  } >ETHRAM
 
   /* Initialized data sections into "RAM" Ram type memory */
   .data :
