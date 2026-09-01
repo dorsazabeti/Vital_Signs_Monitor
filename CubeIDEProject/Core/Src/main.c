@@ -319,6 +319,7 @@ void Vitals_UpdateUI(uint16_t heart_rate, uint8_t spo2, int16_t temperature_tent
     }
 
     lv_obj_set_y(bubble_img, y);
+    lv_obj_set_y(temperature_label, y);
   }
 
   if (error_label != NULL) {
