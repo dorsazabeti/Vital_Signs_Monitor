@@ -1,0 +1,47 @@
+#ifndef NETWORK_ALERT_CONFIG_H
+#define NETWORK_ALERT_CONFIG_H
+
+/*
+ * Default direct-cable setup:
+ *   computer: 192.168.7.1/24
+ *   board:    192.168.7.2/24
+ *
+ * Change only this file when the laboratory network uses another subnet.
+ */
+#define NETWORK_ALERT_DEVICE_IP_0       192U
+#define NETWORK_ALERT_DEVICE_IP_1       168U
+#define NETWORK_ALERT_DEVICE_IP_2       7U
+#define NETWORK_ALERT_DEVICE_IP_3       2U
+
+#define NETWORK_ALERT_RECEIVER_IP_0     192U
+#define NETWORK_ALERT_RECEIVER_IP_1     168U
+#define NETWORK_ALERT_RECEIVER_IP_2     7U
+#define NETWORK_ALERT_RECEIVER_IP_3     1U
+
+#define NETWORK_ALERT_NETMASK_0         255U
+#define NETWORK_ALERT_NETMASK_1         255U
+#define NETWORK_ALERT_NETMASK_2         255U
+#define NETWORK_ALERT_NETMASK_3         0U
+
+#define NETWORK_ALERT_GATEWAY_IP_0      192U
+#define NETWORK_ALERT_GATEWAY_IP_1      168U
+#define NETWORK_ALERT_GATEWAY_IP_2      7U
+#define NETWORK_ALERT_GATEWAY_IP_3      1U
+
+#define NETWORK_ALERT_UDP_PORT          5055U
+#define NETWORK_ALERT_SOURCE_PORT       5056U
+#define NETWORK_ALERT_PHY_ADDRESS       0U
+
+#define NETWORK_ALERT_HR_LOW            60U
+#define NETWORK_ALERT_HR_HIGH           100U
+#define NETWORK_ALERT_SPO2_LOW          92U
+#define NETWORK_ALERT_TEMP_LOW_TENTHS   350
+#define NETWORK_ALERT_TEMP_HIGH_TENTHS  380
+
+#define NETWORK_ALERT_CONFIRM_SAMPLES   3U
+#define NETWORK_ALERT_CLEAR_SAMPLES     3U
+#define NETWORK_ALERT_REPEAT_MS         30000UL
+#define NETWORK_ALERT_ARP_RETRY_MS      1000UL
+#define NETWORK_ALERT_LINK_POLL_MS      500UL
+
+#endif /* NETWORK_ALERT_CONFIG_H */

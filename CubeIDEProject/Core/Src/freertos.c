@@ -29,6 +29,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "lvgl.h"
+#include "network_alert.h"
 
 /* USER CODE END Includes */
 
@@ -184,6 +185,8 @@ void StartDefaultTask(void const * argument)
   MX_USB_HOST_Init();
 #endif
   /* USER CODE BEGIN StartDefaultTask */
+  NetworkAlert_Init();
+
   /* Infinite loop */
   for(;;)
   {
@@ -208,6 +211,12 @@ void StartDefaultTask(void const * argument)
                   temperature_tenths,
                   scenario
               );
+              NetworkAlert_UpdateVitals(
+                  heart_rate,
+                  spo2,
+                  temperature_tenths,
+                  scenario
+              );
 
               if(Json_ParseECG(uart_line, &ecg) != 0U)
               {
@@ -216,6 +225,7 @@ void StartDefaultTask(void const * argument)
           }
       }
 
+      NetworkAlert_Process();
 
       uint32_t delay_ms = lv_timer_handler();
 

@@ -31,9 +31,9 @@
 | داشبورد | انجام شده | سه کارت HR، Temperature و SpO2 به همراه انیمیشن قلب نمایش داده می‌شوند. |
 | Python simulator | انجام شده | پنج سناریو، ECG، Mock mode و خروجی JSON روی UART آماده است. |
 | دریافت UART در Firmware | در کد پیاده‌سازی شده | USART1، وقفه، بافر خط، parser و انتقال داده به UI وجود دارند؛ تست End-to-End نهایی روی برد باید ثبت شود. |
-| ECG روی LCD | انجام نشده | مقدار ECG فعلاً دریافت/ارسال می‌شود اما Firmware آن را نادیده می‌گیرد. |
+| ECG روی LCD | در کد پیاده‌سازی شده | آخرین تغییرات نمودار ECG را اضافه کرده‌اند؛ تست نهایی روی برد باید ثبت شود. |
 | وضعیت غیرعادی و هشدار UI | انجام نشده | Threshold، رنگ هشدار و stale-data indicator باید اضافه شوند. |
-| Ethernet و Alert | انجام نشده | فایل‌های تولیدشده‌ی Ethernet وجود دارند ولی در حالت فعلی Initialize نمی‌شوند. |
+| Ethernet و Alert | پیاده‌سازی نرم‌افزاری کامل؛ نیازمند تست برد | ETH با IP ثابت، ARP، Ping، UDP، Threshold، rate limit، گیرنده Python، اعلان macOS و webhook آماده است. |
 | حسگر واقعی | خارج از فاز فعلی | پس از کامل شدن مسیر شبیه‌ساز تا نمایشگر قابل بررسی است. |
 
 نکته مهم: پیاده‌سازی فعلی از نظر کد، مسیر UART تا `Vitals_UpdateUI()` را کامل کرده است؛ اما تا زمانی که روی برد واقعی تغییر زنده اعداد مشاهده و ثبت نشود، وضعیت آن «پیاده‌سازی‌شده ولی نیازمند تأیید سخت‌افزاری» محسوب می‌شود.
@@ -95,6 +95,9 @@ Headerهای اصلی Firmware در این پوشه قرار دارند:
 - `stm32f7xx_it.h`: Prototype وقفه‌ها، از جمله `USART1_IRQHandler()`.
 - `images.h`: اعلان تمام Image descriptorهای استفاده‌شده در LVGL.
 - `FreeRTOSConfig.h`: تنظیمات FreeRTOS.
+- `network_alert.h`: API عمومی راه‌اندازی، پردازش، ورود Vitalها و مشاهده وضعیت شبکه.
+- `network_alert_config.h`: IPها، پورت‌ها، Thresholdها و زمان‌بندی هشدار.
+- `network_alert_logic.h`: قرارداد منطق مستقل هشدار و Payload.
 - Headerهای سایر Peripheralها مانند `eth.h`، `dma2d.h`، `gpio.h`، `tim.h`، `i2c.h`، `spi.h` و غیره که عمدتاً توسط CubeMX تولید شده‌اند.
 - `Backup/`: نسخه‌های پشتیبان قدیمی؛ منبع Build فعلی نیست.
 
@@ -107,6 +110,8 @@ Headerهای اصلی Firmware در این پوشه قرار دارند:
 - `ltdc.c`: Timing نمایشگر، GPIOهای RGB، Pixel clock، Layer اصلی و Interrupt مربوط به LTDC.
 - `lv_port_disp.c`: اتصال LVGL به Framebuffer، دو بافر 40 خطی و تابع Flush برای کپی خروجی به SDRAM.
 - `freertos.c`: ساخت `defaultTask`، اجرای `lv_timer_handler()`، خواندن خط UART، Parse کردن JSON و به‌روزرسانی UI.
+- `network_alert.c`: درایور شبکهٔ سطح برنامه شامل Link، ARP، Ping و ارسال IPv4/UDP روی HAL ETH.
+- `network_alert_logic.c`: تشخیص وضعیت غیرعادی، debounce، rate limit، recovery و ساخت JSON هشدار.
 - `usart.c`: تنظیم USART1 و USART6، فعال‌سازی NVIC برای USART1، دریافت Interrupt-based و مدیریت دو بافر خط.
 - `stm32f7xx_it.c`: Handler وقفه‌های سیستم و `USART1_IRQHandler()` که HAL UART handler را صدا می‌زند.
 - `gpio.c`: GPIOهای عمومی از جمله LCD display enable و backlight.
@@ -513,10 +518,10 @@ python3 -m unittest discover -s tests -v
 
 1. اجرای تست ماتریسی پنج سناریو روی پورت واقعی و ذخیره Log خلاصه.
 2. افزودن reconnect یا پیام خطای واضح برای قطع پورت.
-3. طراحی Proof of Concept هشدار شبکه در سمت PC؛ پیشنهاد کم‌ریسک هفته سوم: HTTP webhook یا MQTT از Python پس از عبور مقدار از Threshold.
-4. تعریف Payload هشدار شامل scenario، HR، SpO2، Temp، timestamp و severity.
-5. افزودن تست برای Thresholdها، Payload شبکه و عدم ارسال تکراری هشدار در هر Sample.
-6. مستندسازی تفاوت مسیر شبکه PC-side با هدف نهایی Ethernet روی STM32.
+3. ~~طراحی Proof of Concept هشدار شبکه در سمت PC.~~ انجام شد و مسیر نهایی از Ethernet خود STM32 نیز پیاده‌سازی شد.
+4. ~~تعریف Payload هشدار شامل scenario، HR، SpO2، Temp، timestamp و severity.~~ انجام شد.
+5. ~~افزودن تست برای Thresholdها، Payload شبکه و عدم ارسال تکراری هشدار در هر Sample.~~ انجام شد.
+6. ~~مستندسازی مسیر شبکه.~~ در `docs/NETWORK_ALERT.md` انجام شد.
 
 معیار تحویل:
 
@@ -541,7 +546,7 @@ python3 -m unittest discover -s tests -v
 - طراحی Buffer مناسب ECG جدا از Update نرخ پایین‌تر اعداد.
 - تشخیص Threshold روی Firmware یا تعریف روشن محل تصمیم‌گیری.
 - فعال‌سازی تدریجی Peripheralهای لازم با خارج شدن از `LCD_BRINGUP_MODE=1`.
-- راه‌اندازی Ethernet واقعی روی STM32، DHCP/static IP و ارسال Alert.
+- تست فیزیکی Link/Ping/UDP پیاده‌سازی Ethernet روی برد و ثبت Log نتیجه.
 
 اولویت متوسط:
 
@@ -557,11 +562,11 @@ python3 -m unittest discover -s tests -v
 - جایگزینی شبیه‌ساز با سنسور واقعی.
 - ذخیره داده روی SD/FatFs.
 - صفحه History و Trend.
-- ارسال هشدار Push/Email از مسیر نهایی شبکه.
+- در صورت ترجیح استاد، جایگزینی اعلان macOS/webhook فعلی با سرویس Email مشخص.
 
 ## 16. بدهی‌های فنی و ریسک‌های فعلی
 
-- `LCD_BRINGUP_MODE=1` در `CMakeLists.txt` فعال است؛ بنابراین Ethernet و بیشتر Peripheralها عمداً Initialize نمی‌شوند.
+- `LCD_BRINGUP_MODE=1` در `CMakeLists.txt` فعال است؛ ماژول شبکه برای استقلال از `main.c`، ETH را در Task خود راه‌اندازی می‌کند.
 - `main.c` در حال حاضر `usart.h` را دو بار Include کرده است؛ بی‌ضرر ولی باید تمیز شود.
 - sequence مربوط به invalidate/reload و Backlight در انتهای راه‌اندازی LVGL دو بار تکرار شده است.
 - Boot تشخیصی فعلی حدود پنج ثانیه Delay اجباری دارد.
@@ -570,7 +575,7 @@ python3 -m unittest discover -s tests -v
 - خطای برگشتی `HAL_UART_Receive_IT()` در Callback فعلی فقط cast به void شده و شمارش/Recovery ندارد.
 - هنوز Timeout داده، Frame counter و نشانه خطای ارتباط در UI وجود ندارد.
 - UI فعلی با هر فریم معتبر Labelها را Update می‌کند؛ برای 50Hz بهتر است نرخ UI عددی از نرخ ECG جدا شود.
-- Ethernet code توسط CubeMX تولید شده اما Board-level و Network-stack integration تست نشده است.
+- Network stack موردنیاز Demo پیاده‌سازی و تست نرم‌افزاری شده، اما Link/Ping/UDP هنوز باید روی برد واقعی تأیید شود.
 - Build با `GLOB_RECURSE` بخش بزرگی از سورس‌های Library را وارد می‌کند؛ فعلاً کار می‌کند ولی زمان Build و حجم پروژه بالاست.
 - پوشه‌های `Backup` و سورس کامل LVGL حجم Zip و مخزن را زیاد می‌کنند؛ حذف یا تغییر آن‌ها فقط پس از هماهنگی تیم انجام شود.
 
@@ -600,10 +605,12 @@ python3 -m unittest discover -s tests -v
 
 ### Network
 
-- [ ] Normal هشدار تولید نمی‌کند.
-- [ ] حداقل یک وضعیت غیرعادی هشدار معتبر تولید می‌کند.
-- [ ] هشدارها Rate-limited هستند.
-- [ ] خطای شبکه سیستم را متوقف نمی‌کند.
+- [x] تست خودکار: Normal هشدار تولید نمی‌کند.
+- [x] تست خودکار: وضعیت غیرعادی Payload معتبر تولید می‌کند.
+- [x] تست خودکار: هشدارها Debounced و Rate-limited هستند.
+- [x] گیرنده خطای پیام و webhook را بدون توقف مدیریت می‌کند.
+- [ ] تست برد: Link و `ping 192.168.7.2` موفق است.
+- [ ] تست برد: UDP هشدار در گیرنده و `alerts.jsonl` ثبت می‌شود.
 
 ### Documentation
 
@@ -624,24 +631,14 @@ python3 -m unittest discover -s tests -v
 
 ## 19. وضعیت Git هنگام ایجاد این سند
 
-Commit پایه فعلی:
+Commit پایه هنگام شروع کار شبکه:
 
 ```text
-ef73750 feat: add LVGL vital-sign dashboard and UART simulation support
+f69568c Ecg start
 ```
 
-فایل‌های دارای تغییر محلی قبل از ایجاد این سند:
-
-```text
-Core/Inc/stm32f7xx_it.h
-Core/Inc/usart.h
-Core/Src/freertos.c
-Core/Src/main.c
-Core/Src/usart.c
-```
-
-پوشه‌های `docs/` و `output/` نیز در آن لحظه هنوز Track نشده بودند. فایل `.DS_Store` ریشه مخزن هم تغییر کرده بود و نباید Commit شود.
+وضعیت مخزن پیش از شروع این مرحله تمیز و با `origin/main` همگام بود. در کار شبکه، `main.c` عمداً تغییر نکرده است تا با کار هم‌زمان عضو دیگر تیم Conflict ایجاد نشود. فایل‌های تغییرکرده و جدید این مرحله با `git status` قابل مشاهده‌اند و هنوز Commit نشده‌اند.
 
 ---
 
-آخرین جمع‌بندی: زیرساخت نمایشگر و حافظه پایدار شده، داشبورد LVGL فعال است و کد مسیر UART تا UI موجود است. Milestone بعدی، تأیید End-to-End روی برد، تکمیل حالت‌های UI، افزودن تشخیص قطع/هشدار و ساخت Proof of Concept شبکه در هفته سوم است.
+آخرین جمع‌بندی: زیرساخت نمایشگر، UART، ECG و داشبورد در کد موجود است. مسیر شبکه و هشدار شامل IP ثابت، ARP، Ping، UDP، منطق Threshold، گیرنده Python، اعلان و webhook نیز بدون تغییر `main.c` پیاده‌سازی و با تست خودکار بررسی شده است. Milestone بعدی، Flash و تأیید Link/Ping/UDP روی برد واقعی، تکمیل حالت‌های هشدار UI و ثبت عکس و Log دموی نهایی است.
