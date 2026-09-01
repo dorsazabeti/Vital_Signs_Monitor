@@ -68,11 +68,17 @@
 /* USER CODE BEGIN PV */
 static lv_obj_t *heart_img;
 static lv_obj_t *heart_rate_label;
+static uint16_t heart_rate_value = 0U;
+static lv_timer_t *heart_timer;
+static lv_obj_t *spo2_gauge;
+static lv_obj_t *spo2_arrow;
 static lv_obj_t *spo2_label;
+static lv_obj_t *bubble_img
 static lv_obj_t *temperature_label;
 static lv_obj_t *scenario_label;
 static lv_obj_t *ecg_chart;
 static lv_chart_series_t *ecg_series;
+static lv_obj_t *error_label;
 static uint8_t heart_frame = 0;
 static const lv_image_dsc_t *heart_frames[] = {&Heart1, &Heart2, &Heart3, &Heart4, &Heart5, &Heart6, &Heart7, &Heart8};
 static volatile uint8_t lvgl_initialized = 0U;
@@ -210,15 +216,23 @@ void ECG_Update(int16_t ecg)
     );
 }
 
-static void Heart_Timer_Callback(lv_timer_t *timer) {  // TODO: change based on heart rate
-  lv_image_set_src(heart_img, heart_frames[heart_frame]);
-  if (heart_frame == 7) {
-    heart_frame = 0;
-    lv_timer_set_period(timer, 180);
-  } else {
-    heart_frame++;
-    lv_timer_set_period(timer, 90);
-  }
+static void Heart_Timer_Callback(lv_timer_t *timer) {
+    lv_image_set_src(heart_img, heart_frames[heart_frame]);
+
+    uint16_t hr = heart_rate_value;
+    if (hr == 0U) {
+      hr = 60U;
+    }
+
+    uint32_t frame_period = 60000U / (9U * (uint32_t)hr);
+    if (heart_frame == 7U) {
+      heart_frame = 0U;
+      lv_timer_set_period(timer, frame_period * 2U);
+    }
+    else {
+      heart_frame++;
+      lv_timer_set_period(timer, frame_period);
+    }
 }
 
 static lv_obj_t *Vitals_CreateCard(lv_obj_t *parent, int32_t x)
@@ -244,6 +258,26 @@ static lv_obj_t *Vitals_CreateLabel(lv_obj_t *parent, const char *text, lv_color
   return label;
 }
 
+static int32_t Gauge_Angle(uint8_t spo2) {
+  if (spo2 >= 100U) {
+    return 1200;
+  }
+
+  if (spo2 >= 95U) {
+    return 400 + ((int32_t)(spo2 - 95U) * 800) / 5;
+  }
+
+  if (spo2 >= 90U) {
+    return -400 + ((int32_t)(spo2 - 90U) * 800) / 5;
+  }
+
+  if (spo2 >= 80U) {
+    return -1200 + ((int32_t)(spo2 - 80U) * 800) / 10;
+  }
+
+  return -1200;
+}
+
 void Vitals_UpdateUI(uint16_t heart_rate, uint8_t spo2, int16_t temperature_tenths, const char *scenario)
 {
   if ((heart_rate_label == NULL) || (spo2_label == NULL) ||
@@ -252,12 +286,73 @@ void Vitals_UpdateUI(uint16_t heart_rate, uint8_t spo2, int16_t temperature_tent
     return;
   }
 
+  heart_rate_value = heart_rate;
+
   lv_label_set_text_fmt(heart_rate_label, "%u BPM", (unsigned int)heart_rate);
   lv_label_set_text_fmt(spo2_label, "%u %%", (unsigned int)spo2);
   lv_label_set_text_fmt(temperature_label, "%d.%d C",
                         (int)(temperature_tenths / 10),
                         (int)(temperature_tenths % 10));
   lv_label_set_text_fmt(scenario_label, "%s | LIVE UART", scenario);
+  
+  if ((heart_timer == NULL) || (heart_rate == 0U)) {
+    return;
+  }
+  lv_timer_set_period(heart_timer, 60000U / ((uint32_t)heart_rate * 8U));
+
+  if (spo2_arrow != NULL) {
+    int32_t angle = Gauge_Angle(spo2);
+    lv_image_set_rotation(spo2_arrow, angle);
+  }
+
+  if (bubble_img != NULL) {
+    int32_t y;
+
+    if (temperature_tenths <= 350) {
+      y = 62;
+    }
+    else if (temperature_tenths >= 400) {
+      y = 52;
+    }
+    else {
+      y = 62 - ((temperature_tenths - 350) * 10) / 50;
+    }
+
+    lv_obj_set_y(bubble_img, y);
+  }
+
+  if (error_label != NULL) {
+    bool abnormal = false;
+
+    if (heart_rate < 60U) {
+      lv_label_set_text(error_label, "WARNING: LOW HEART RATE");
+      abnormal = true;
+    }
+    
+    if (heart_rate > 100U) {
+      lv_label_set_text(error_label, "WARNING: HIGH HEART RATE");
+      abnormal = true;
+    }
+
+    if (spo2 < 95U) {
+      lv_label_set_text(error_label, "WARNING: LOW BLOOD OXYGEN");
+      abnormal = true;
+    }
+
+    if (temperature_tenths < 360){
+      lv_label_set_text(error_label, "WARNING: LOW TEMPERATURE");
+      abnormal = true;
+    }
+    
+    if (temperature_tenths < 375){
+      lv_label_set_text(error_label, "WARNING: HIGH TEMPERATURE");
+      abnormal = true;
+    }
+  }
+
+  if (abnormal) {
+    // TODO: send notification
+  }
 }
 
 static void Vitals_CreateDashboard(lv_obj_t *screen)
@@ -290,7 +385,7 @@ static void Vitals_CreateDashboard(lv_obj_t *screen)
   lv_image_set_src(image, &Thermometer);
   lv_obj_set_pos(image, 7, 42);
 
-  image = lv_image_create(temperature_card);
+  bubble_img = lv_image_create(temperature_card);
   lv_image_set_src(image, &Bubble);
   lv_obj_set_pos(image, 39, 59);
 
@@ -303,18 +398,39 @@ static void Vitals_CreateDashboard(lv_obj_t *screen)
   lv_obj_align(caption, LV_ALIGN_TOP_MID, 0, 8);
 
   image = lv_image_create(spo2_card);
+
+  lv_image_set_src(image, &Gauge);
+
+  lv_obj_set_pos(image, 32, 42);
+
+  spo2_arrow = lv_image_create(spo2_card);
+
+  lv_image_set_src(spo2_arrow, &GaugeArrow);
+
+  lv_obj_set_pos(spo2_arrow, 32, 42);
+
+  lv_image_set_pivot(spo2_arrow, 42, 42);
+
+  lv_image_set_rotation(spo2_arrow, 0);
+
+  image = lv_image_create(spo2_card);
   lv_image_set_src(image, &Gauge);
   lv_obj_set_pos(image, 32, 42);
 
-  image = lv_image_create(spo2_card);
-  lv_image_set_src(image, &GaugeArrow);
-  lv_obj_set_pos(image, 32, 42);
+  spo2_arrow = lv_image_create(spo2_card);
+  lv_image_set_src(spo2_arrow, &GaugeArrow);
+  lv_obj_set_pos(spo2_arrow, 32, 42);
+  lv_image_set_pivot(spo2_arrow, 42, 42);
+  lv_image_set_rotation(spo2_arrow, 0);
 
   spo2_label = Vitals_CreateLabel(spo2_card, "-- %", lv_color_white());
   lv_obj_align(spo2_label, LV_ALIGN_BOTTOM_MID, 0, -12);
 
   scenario_label = Vitals_CreateLabel(screen, "STARTING SIMULATION", caption_color);
   lv_obj_align(scenario_label, LV_ALIGN_BOTTOM_MID, 0, -7);
+
+  error_label = Vitals_CreateLabel(screen, "", lv_color_hex(0xFF0000U));
+  lv_obj_align(error_label, LV_ALIGN_BOTTOM_LEFT, 8, -7);
 
   ecg_chart = lv_chart_create(screen);
 
@@ -335,7 +451,7 @@ static void Vitals_CreateDashboard(lv_obj_t *screen)
 
   lv_chart_set_type(ecg_chart, LV_CHART_TYPE_LINE);
 
-  lv_chart_set_point_count(ecg_chart, 300);
+  lv_chart_set_point_count(ecg_chart, 100);
 
   lv_chart_set_range(
       ecg_chart,
@@ -357,7 +473,7 @@ static void Vitals_CreateDashboard(lv_obj_t *screen)
 
   Vitals_UpdateUI(76U, 98U, 370, "Normal");
   lv_label_set_text(scenario_label, "Normal | WAITING FOR UART");
-  lv_timer_create(Heart_Timer_Callback, 90, NULL);
+  heart_timer = lv_timer_create(Heart_Timer_Callback, 90, NULL);
 }
 /* USER CODE END 0 */
 
